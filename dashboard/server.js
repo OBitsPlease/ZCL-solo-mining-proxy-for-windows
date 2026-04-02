@@ -20,6 +20,24 @@ try {
     if (installPaths.vtcCli) VTC_CLI = installPaths.vtcCli;
 } catch (_) {}
 
+// Read a value from a .conf file (key=value format)
+function readConf(confPath, key) {
+    try {
+        const lines = fs.readFileSync(confPath, 'utf8').split(/\r?\n/);
+        for (const line of lines) {
+            const m = line.match(new RegExp(`^${key}=(.+)`));
+            if (m) return m[1].trim();
+        }
+    } catch (_) {}
+    return null;
+}
+
+// Load VTC RPC credentials from vertcoin.conf
+const VTC_CONF = path.join(process.env.APPDATA || '', 'Vertcoin', 'vertcoin.conf');
+const vtcRpcUser = readConf(VTC_CONF, 'rpcuser') || 'vtcuser';
+const vtcRpcPass = readConf(VTC_CONF, 'rpcpassword') || '';
+const vtcRpcPort = readConf(VTC_CONF, 'rpcport') || '15889';
+
 // Per-pool config: maps poolId → { cliPath, cliBalanceCmd, coinGeckoId, symbol }
 const POOL_META = {
     'zcl_solo1': {
@@ -37,7 +55,7 @@ const POOL_META = {
     },
     'vtc_solo1': {
         cli:         () => VTC_CLI,
-        balanceCmd:  (cli) => `"${cli}" -rpcport=15889 -rpcuser=vtcuser -rpcpassword=vtcpass getbalance`,
+        balanceCmd:  (cli) => `"${cli}" -rpcport=${vtcRpcPort} -rpcuser=${vtcRpcUser} -rpcpassword=${vtcRpcPass} getbalance`,
         parseBalance:(out) => parseFloat(out.trim()),
         coinGeckoId: 'vertcoin',
         symbol:      'VTC',
