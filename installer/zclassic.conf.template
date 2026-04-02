@@ -1,0 +1,21 @@
+# ZClassic daemon configuration
+# Edit this file before starting the pool
+# Full docs: https://zcl.network
+
+# RPC settings - MUST match the daemons section in zclassic_solo_pool.json
+rpcuser=YOUR_RPC_USER
+rpcpassword=YOUR_RPC_PASSWORD
+rpcport=8023
+rpcallowip=127.0.0.1
+
+# Network
+server=1
+listen=1
+maxconnections=16
+
+# Index transactions (required for solo pool)
+txindex=1
+
+# Allow wallet access for pool address
+walletnotify=
+blocknotify=

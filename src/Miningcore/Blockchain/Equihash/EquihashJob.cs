@@ -161,16 +161,92 @@ public class EquihashJob
         // output transaction
         txOut = CreateOutputTransaction();
 
-        using(var stream = new MemoryStream())
+        // Manual Zcash Sapling/Overwinter serialization to avoid NBitcoin.Zcash ABI incompatibility
+        using var ms = new MemoryStream();
+        using var writer = new BinaryWriter(ms);
+
+        if(isOverwinterActive || isSaplingActive)
         {
-            var bs = new ZcashStream(stream, true);
-            bs.ReadWrite(ref txOut);
+            // fOverwintered flag is top bit of version field
+            writer.Write(txVersion | 0x80000000u);
+            writer.Write(txVersionGroupId);
+        }
+        else
+        {
+            writer.Write(txVersion);
+        }
 
-            // done
-            coinbaseInitial = stream.ToArray();
+        // vin
+        WriteVarInt(writer, (ulong) txOut.Inputs.Count);
+        foreach(var input in txOut.Inputs)
+        {
+            writer.Write(input.PrevOut.Hash.ToBytes());
+            writer.Write(input.PrevOut.N);
+            var scriptSig = input.ScriptSig.ToBytes();
+            WriteVarInt(writer, (ulong) scriptSig.Length);
+            writer.Write(scriptSig);
+            writer.Write(input.Sequence.Value);
+        }
 
-            coinbaseInitialHash = new byte[32];
-            sha256D.Digest(coinbaseInitial, coinbaseInitialHash);
+        // vout
+        WriteVarInt(writer, (ulong) txOut.Outputs.Count);
+        foreach(var output in txOut.Outputs)
+        {
+            writer.Write(output.Value.Satoshi);
+            var scriptPubKey = output.ScriptPubKey.ToBytes();
+            WriteVarInt(writer, (ulong) scriptPubKey.Length);
+            writer.Write(scriptPubKey);
+        }
+
+        // nLockTime
+        writer.Write((uint) txOut.LockTime.Value);
+
+        if(isOverwinterActive || isSaplingActive)
+        {
+            // nExpiryHeight (0 = no expiry)
+            writer.Write(0u);
+        }
+
+        if(isSaplingActive)
+        {
+            // valueBalance: 0 (no shielded inputs or outputs)
+            writer.Write(0L);
+            // vShieldedSpend count = 0
+            WriteVarInt(writer, 0);
+            // vShieldedOutput count = 0
+            WriteVarInt(writer, 0);
+        }
+
+        if(isOverwinterActive || isSaplingActive)
+        {
+            // vJoinSplit count = 0 (no joinSplitPubKey/Sig when count = 0)
+            WriteVarInt(writer, 0);
+        }
+
+        writer.Flush();
+        coinbaseInitial = ms.ToArray();
+        coinbaseInitialHash = new byte[32];
+        sha256D.Digest(coinbaseInitial, coinbaseInitialHash);
+    }
+
+    private static void WriteVarInt(BinaryWriter writer, ulong value)
+    {
+        if(value < 0xfd)
+            writer.Write((byte) value);
+        else if(value <= 0xffff)
+        {
+            writer.Write((byte) 0xfd);
+            writer.Write((ushort) value);
+        }
+        else if(value <= 0xffffffff)
+        {
+            writer.Write((byte) 0xfe);
+            writer.Write((uint) value);
+        }
+        else
+        {
+            writer.Write((byte) 0xff);
+            writer.Write(value);
         }
     }
 

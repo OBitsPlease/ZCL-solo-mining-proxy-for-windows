@@ -40,8 +40,8 @@ public unsafe class Verthash :
     {
         var vertHashDataFile = "verthash.dat";
 
-        if(poolConfig.Extra.TryGetValue("vertHashDataFile", out var result))
-            vertHashDataFile = ((string) result).Trim();
+        if(poolConfig.Extra != null && poolConfig.Extra.TryGetValue("vertHashDataFile", out var result))
+            vertHashDataFile = result?.ToString()?.Trim() ?? vertHashDataFile;
 
         logger.Info(()=> $"Loading verthash data file {vertHashDataFile}");
 

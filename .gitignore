@@ -206,3 +206,7 @@ fabric.properties
 .idea
 
 .fake
+dashboard/node_modules/
+installer-output/*.exe
+build/
+*.log

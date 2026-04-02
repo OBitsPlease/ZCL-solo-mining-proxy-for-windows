@@ -324,8 +324,11 @@ public class BitcoinJob
         headerHasher.Digest(headerBytes, headerHash, (ulong) nTime, BlockTemplate, coin, networkParams);
         var headerValue = new uint256(headerHash);
 
-        // calc share-diff
-        var shareDiff = (double) new BigRational(BitcoinConstants.Diff1, headerHash.ToBigInteger()) * shareMultiplier;
+        // calc share-diff — guard against zero hash (e.g. during Verthash GPU auto-tune)
+        var headerHashBigInt = headerHash.ToBigInteger();
+        if(headerHashBigInt == System.Numerics.BigInteger.Zero)
+            throw new StratumException(StratumError.LowDifficultyShare, "invalid share (zero hash)");
+        var shareDiff = (double) new BigRational(BitcoinConstants.Diff1, headerHashBigInt) * shareMultiplier;
         var stratumDifficulty = context.Difficulty;
         var ratio = shareDiff / stratumDifficulty;
 

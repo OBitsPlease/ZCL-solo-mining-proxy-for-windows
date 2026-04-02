@@ -836,3 +836,6 @@ template bool Equihash<144, 5>::OptimisedSolve(const eh_HashState& base_state,
     const std::function<bool(EhSolverCancelCheck)> cancelled);
 #endif
 template bool Equihash<144, 5>::IsValidSolution(const eh_HashState& base_state, std::vector<unsigned char> soln);
+
+template int Equihash<192, 7>::InitialiseState(eh_HashState& base_state, const char *personalization);
+template bool Equihash<192, 7>::IsValidSolution(const eh_HashState& base_state, std::vector<unsigned char> soln);

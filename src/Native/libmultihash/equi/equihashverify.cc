@@ -30,6 +30,28 @@ bool verifyEH_96_5(const char *hdr, const std::vector<unsigned char> &soln, cons
     return isValid;
 }
 
+bool verifyEH_192_7(const char *hdr, const std::vector<unsigned char> &soln, const char *personalization)
+{
+    unsigned int n = 192;
+    unsigned int k = 7;
+
+    if (soln.size() != 400)
+        return false;
+
+    if (personalization == NULL)
+        personalization = default_personalization;
+
+    // Hash state
+    crypto_generichash_blake2b_state state;
+    EhInitialiseState(n, k, state, personalization);
+
+    crypto_generichash_blake2b_update(&state, (const unsigned char*)hdr, 140);
+
+    bool isValid = Eh192_7.IsValidSolution(state, soln);
+
+    return isValid;
+}
+
 bool verifyEH_200_9(const char *hdr, const std::vector<unsigned char> &soln, const char *personalization)
 {
   unsigned int n = 200;

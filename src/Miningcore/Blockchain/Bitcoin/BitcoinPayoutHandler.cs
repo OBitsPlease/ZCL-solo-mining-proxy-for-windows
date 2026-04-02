@@ -114,32 +114,67 @@ public class BitcoinPayoutHandler : PayoutHandlerBase,
                 // check error
                 if(cmdResult.Error != null)
                 {
-                    // Code -5 interpreted as "orphaned"
+                    // Code -5 = wallet doesn't know this tx (address not imported or no txindex).
+                    // Verify via getblockhash+getblock before declaring orphan.
                     if(cmdResult.Error.Code == -5)
                     {
-                        block.Status = BlockStatus.Orphaned;
-                        block.Reward = 0;
-                        result.Add(block);
-
-                        logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} classified as orphaned due to daemon error {cmdResult.Error.Code}");
-
-                        messageBus.NotifyBlockUnlocked(poolConfig.Id, block, coin);
+                        var isOnChain = await VerifyBlockOnChainAsync(block, minConfirmations, ct);
+                        if(isOnChain.HasValue)
+                        {
+                            block.ConfirmationProgress = isOnChain.Value;
+                            if(isOnChain.Value >= 1.0d)
+                            {
+                                block.Status = BlockStatus.Confirmed;
+                                logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} confirmed via getblock (gettransaction unavailable - import pool address into wallet)");
+                            }
+                            else
+                            {
+                                // still immature
+                                logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} immature ({isOnChain.Value:P0}) via getblock");
+                            }
+                            result.Add(block);
+                        }
+                        else
+                        {
+                            block.Status = BlockStatus.Orphaned;
+                            block.Reward = 0;
+                            result.Add(block);
+                            logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} confirmed orphaned via getblock");
+                            messageBus.NotifyBlockUnlocked(poolConfig.Id, block, coin);
+                        }
                     }
 
                     else
                         logger.Warn(() => $"[{LogCategory}] Daemon reports error '{cmdResult.Error.Message}' (Code {cmdResult.Error.Code}) for transaction {page[j].TransactionConfirmationData}");
                 }
 
-                // missing transaction details are interpreted as "orphaned"
+                // missing transaction details — gettransaction returned but wallet doesn't track this address fully
+                // fall back to getblockhash+getblock to verify
                 else if(transactionInfo?.Details == null || transactionInfo.Details.Length == 0)
                 {
-                    block.Status = BlockStatus.Orphaned;
-                    block.Reward = 0;
-                    result.Add(block);
-
-                    logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} classified as orphaned due to missing tx details");
-
-                    messageBus.NotifyBlockUnlocked(poolConfig.Id, block, coin);
+                    var isOnChain = await VerifyBlockOnChainAsync(block, minConfirmations, ct);
+                    if(isOnChain.HasValue)
+                    {
+                        block.ConfirmationProgress = isOnChain.Value;
+                        if(isOnChain.Value >= 1.0d)
+                        {
+                            block.Status = BlockStatus.Confirmed;
+                            logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} confirmed via getblock (wallet has no tx details)");
+                        }
+                        else
+                        {
+                            logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} immature ({isOnChain.Value:P0}) via getblock");
+                        }
+                        result.Add(block);
+                    }
+                    else
+                    {
+                        block.Status = BlockStatus.Orphaned;
+                        block.Reward = 0;
+                        result.Add(block);
+                        logger.Info(() => $"[{LogCategory}] Block {block.BlockHeight} confirmed orphaned via getblock (missing tx details)");
+                        messageBus.NotifyBlockUnlocked(poolConfig.Id, block, coin);
+                    }
                 }
 
                 else
@@ -182,6 +217,47 @@ public class BitcoinPayoutHandler : PayoutHandlerBase,
         }
 
         return result.ToArray();
+    }
+
+    /// <summary>
+    /// Verifies a block is on the main chain using getblockhash+getblock.
+    /// Returns confirmation progress (0..1) if on-chain, null if orphaned/not found.
+    /// </summary>
+    protected async Task<double?> VerifyBlockOnChainAsync(Block block, int minConfirmations, CancellationToken ct)
+    {
+        try
+        {
+            // getblockhash <height>
+            var hashResult = await rpcClient.ExecuteAsync<string>(logger, BitcoinCommands.GetBlockHash, ct, new object[] { block.BlockHeight });
+            if(hashResult.Error != null || string.IsNullOrEmpty(hashResult.Response))
+                return null;
+
+            // getblock <hash> 1
+            var blockResult = await rpcClient.ExecuteAsync<JObject>(logger, BitcoinCommands.GetBlock, ct, new object[] { hashResult.Response, 1 });
+            if(blockResult.Error != null || blockResult.Response == null)
+                return null;
+
+            var confirmations = blockResult.Response["confirmations"]?.Value<long>() ?? 0;
+            if(confirmations < 0) return null; // -1 = not in main chain (orphaned)
+
+            var progress = Math.Min(1.0d, (double) confirmations / minConfirmations);
+            if(progress >= 1.0d)
+            {
+                // Try to get actual reward from block coinbase
+                var txids = blockResult.Response["tx"]?.ToObject<string[]>();
+                if(txids?.Length > 0)
+                {
+                    // Estimate reward from known value or keep existing
+                    if(block.Reward == 0)
+                        block.Reward = 0.390625m; // ZCL current block reward
+                }
+            }
+            return progress;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public virtual async Task PayoutAsync(IMiningPool pool, Balance[] balances, CancellationToken ct)

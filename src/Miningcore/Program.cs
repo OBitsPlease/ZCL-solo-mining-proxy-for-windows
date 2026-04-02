@@ -178,7 +178,7 @@ public class Program : BackgroundService
                         {
                             options.JsonSerializerOptions.WriteIndented = true;
 
-                            if(!clusterConfig.Api.LegacyNullValueHandling)
+                            if(clusterConfig.Api?.LegacyNullValueHandling != true)
                                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                         });
 

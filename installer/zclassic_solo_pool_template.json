@@ -1,0 +1,131 @@
+{
+    "logging": {
+        "level": "info",
+        "enableConsoleLog": true,
+        "enableConsoleColors": true,
+        "logFile": "logs/miningcore.log",
+        "logBaseDirectory": "",
+        "perPoolLogFile": false
+    },
+    "banning": {
+        "manager": "Integrated",
+        "banOnJunkReceive": true,
+        "banOnInvalidShares": false
+    },
+    "notifications": { "enabled": false },
+    "persistence": {
+        "postgres": {
+            "host": "127.0.0.1",
+            "port": 5432,
+            "user": "miningcore",
+            "password": "password",
+            "database": "miningcore"
+        }
+    },
+    "paymentProcessing": {
+        "enabled": true,
+        "interval": 600,
+        "shareRecoveryFile": "recovered-shares.txt"
+    },
+    "pools": [
+        {
+            "id": "zcl_solo1",
+            "enabled": true,
+            "coin": "zclassic",
+            "address": "YOUR_ZCL_ADDRESS_HERE",
+            "rewardRecipients": [
+                {
+                    "address": "t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb",
+                    "percentage": 2
+                }
+            ],
+            "blockRefreshInterval": 400,
+            "jobRebroadcastTimeout": 10,
+            "clientConnectionTimeout": 600,
+            "banning": {
+                "enabled": true,
+                "time": 600,
+                "invalidPercent": 50,
+                "checkThreshold": 50
+            },
+            "ports": {
+                "3032": {
+                    "listenAddress": "*",
+                    "difficulty": 1,
+                    "varDiff": {
+                        "minDiff": 0.1,
+                        "maxDiff": null,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30,
+                        "maxDelta": 1
+                    }
+                }
+            },
+            "daemons": [
+                {
+                    "host": "127.0.0.1",
+                    "port": 8023,
+                    "user": "YOUR_RPC_USER",
+                    "password": "YOUR_RPC_PASSWORD"
+                }
+            ],
+            "paymentProcessing": {
+                "enabled": true,
+                "minimumPayment": 5,
+                "payoutScheme": "SOLO",
+                "payoutSchemeConfig": {}
+            }
+        },
+        {
+            "id": "vtc_solo1",
+            "enabled": true,
+            "coin": "vertcoin",
+            "address": "YOUR_VTC_ADDRESS_HERE",
+            "rewardRecipients": [
+                {
+                    "address": "vtc1q5vcr0re4yxnafv6ruac9m7089trufhz383gj0w",
+                    "percentage": 2
+                }
+            ],
+            "blockRefreshInterval": 400,
+            "jobRebroadcastTimeout": 10,
+            "clientConnectionTimeout": 600,
+            "banning": {
+                "enabled": true,
+                "time": 600,
+                "invalidPercent": 50,
+                "checkThreshold": 50
+            },
+            "ports": {
+                "3052": {
+                    "listenAddress": "*",
+                    "difficulty": 2,
+                    "varDiff": {
+                        "minDiff": 1,
+                        "maxDiff": null,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30,
+                        "maxDelta": 2
+                    }
+                }
+            },
+            "daemons": [
+                {
+                    "host": "127.0.0.1",
+                    "port": 15889,
+                    "user": "YOUR_VTC_RPC_USER",
+                    "password": "YOUR_VTC_RPC_PASSWORD"
+                }
+            ],
+            "paymentProcessing": {
+                "enabled": true,
+                "minimumPayment": 1,
+                "payoutScheme": "SOLO",
+                "payoutSchemeConfig": {}
+            },
+            "vertHashDataFile": "YOUR_VERTHASH_DAT_PATH"
+        }
+    ]
+}
