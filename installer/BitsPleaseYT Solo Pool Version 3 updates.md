@@ -26,11 +26,7 @@
 
 12\. Fixed VTC port label (3033 → 3052)
 
-13\. ZCL dev fee now routes to your own mining address
+13\. Installer shortcuts updated to use mining.ico
 
-14\. Removed hardcoded VTC RPC credentials from server.js
-
-15\. Installer shortcuts updated to use mining.ico
-
-16\. Installer shortcut renamed to "BitsPlease Solo Pool"  
+14\. Installer shortcut renamed to "BitsPlease Solo Pool"  
 

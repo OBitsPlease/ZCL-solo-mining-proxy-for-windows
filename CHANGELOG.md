@@ -14,6 +14,5 @@
 11. Fixed dashboard: Min. Payment label and Payments Amount column now update when switching pool tabs
 12. Fixed VTC port label in startup output (was showing 3033, corrected to 3052)
 13. Routed ZCL dev fee to pool owner's own mining address instead of a placeholder address
-14. Removed hardcoded VTC RPC credentials from dashboard server.js — now reads from vertcoin.conf at runtime
-15. Updated installer shortcut and uninstall icon to use mining.ico
-16. Installer Complete-Install.ps1 now creates shortcut named "BitsPlease Solo Pool" with mining icon
+13. Updated installer shortcut and uninstall icon to use mining.ico
+14. Installer Complete-Install.ps1 now creates shortcut named "BitsPlease Solo Pool" with mining icon

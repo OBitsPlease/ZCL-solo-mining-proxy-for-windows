@@ -35,8 +35,7 @@
             "address": "YOUR_ZCL_ADDRESS_HERE",
             "rewardRecipients": [
                 {
-                    "address": "YOUR_ZCL_ADDRESS_HERE",
-                    "percentage": 2
+                    "address": "t1WD3kv2zDpY4sCDks745xbqER4wjx8zpLP",                    "percentage": 2
                 }
             ],
             "blockRefreshInterval": 400,
