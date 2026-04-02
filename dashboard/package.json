@@ -1,6 +1,6 @@
 {
   "name": "bitspleaseytsolo-pools-dashboard",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "BitsPleaseYT Solo Pools Dashboard - ZCL & VTC",
   "main": "server.js",
   "scripts": {

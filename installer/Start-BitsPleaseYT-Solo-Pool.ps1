@@ -1,8 +1,8 @@
 # ============================================================
-#  BitsPleaseYT Solo Pool v2.0.0 Launcher  (portable - uses $PSScriptRoot)
+#  BitsPleaseYT Solo Pool v3.0.0 Launcher  (portable - uses $PSScriptRoot)
 # ============================================================
 
-$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v2.0.0"
+$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v3.0.0"
 
 $INSTALL_DIR = $PSScriptRoot
 $ZCL_DIR     = "$INSTALL_DIR\zcl"

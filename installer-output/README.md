@@ -1,4 +1,4 @@
-# BitsPleaseYT Solo Pool Version 2.0.0
+# BitsPleaseYT Solo Pool Version 3.0.0
 ### Created by [BitsPleaseYT](https://www.youtube.com/@BitsPleaseYT/shorts)
 
 A fully automated, one-click installer for running a ZClassic (ZCL) solo mining pool on Windows.  

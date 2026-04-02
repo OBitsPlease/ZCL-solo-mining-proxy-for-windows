@@ -1,5 +1,5 @@
 ; ============================================================
-;  BitsPleaseYT Solo Pool v2.0.0 - Inno Setup Installer Script
+;  BitsPleaseYT Solo Pool v3.0.0 - Inno Setup Installer Script
 ;  Created by BitsPlease YT
 ;  Two-phase install:
 ;    Phase 1: Extract all files + install ZCL daemon/wallet
@@ -7,7 +7,7 @@
 ; ============================================================
 
 #define MyAppName      "BitsPleaseYT Solo Pools"
-#define MyAppVersion   "2.0.0"
+#define MyAppVersion   "3.0.0"
 #define MyAppPublisher "BitsPlease YT"
 #define MyAppURL       "https://github.com/BitsPleaseYT/solo-pools"
 #define SrcRoot        ".."

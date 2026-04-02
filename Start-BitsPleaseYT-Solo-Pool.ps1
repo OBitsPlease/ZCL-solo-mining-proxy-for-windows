@@ -1,8 +1,8 @@
-﻿# ============================================================
-#  BitsPleaseYT Solo Pool v2.0.0 Launcher
+# ============================================================
+#  BitsPleaseYT Solo Pool v3.0.0 Launcher
 # ============================================================
 
-$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v2.0.0"
+$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v3.0.0"
 $ZCL_DIR   = "C:\Users\tourj\OneDrive\Documents\MINING MINING MINING\WALLETS\ZCLASSIC\zclassic-2-1-1-60-windows-gui-x86_64\zclassic-2-1-1-60-windows-gui-x86_64"
 $ZCL_CONF  = "$env:APPDATA\ZClassic\zclassic.conf"
 $MC_DIR    = "C:\Users\tourj\mining core\build"
@@ -36,7 +36,7 @@ Add-Type -AssemblyName System.Drawing
 $bgImagePath = "C:\Users\tourj\mining core\installer\coin-select-bg.png"
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "BitsPleaseYT Solo Pool v2.0.0"
+$form.Text = "BitsPleaseYT Solo Pool v3.0.0"
 $form.Size = New-Object System.Drawing.Size(720, 460)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"

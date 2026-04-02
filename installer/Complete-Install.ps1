@@ -1,5 +1,5 @@
 # ============================================================
-#  BitsPleaseYT Solo Pool v2.0.0 - Phase 2 Setup (Run after blockchain sync)
+#  BitsPleaseYT Solo Pool v3.0.0 - Phase 2 Setup (Run after blockchain sync)
 #  Shows GUI form to collect user settings, installs dependencies
 # ============================================================
 
@@ -21,7 +21,7 @@ function New-RandomPassword {
 
 # ---- Build the input form ----
 $form = New-Object System.Windows.Forms.Form
-$form.Text           = "BitsPleaseYT Solo Pools v2.0.0 - Complete Setup"
+$form.Text           = "BitsPleaseYT Solo Pools v3.0.0 - Complete Setup"
 $form.Size           = New-Object System.Drawing.Size(620, 660)
 $form.StartPosition  = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
@@ -68,7 +68,7 @@ function Add-TextBox($default, $x, $y, $w=560) {
     return $tb
 }
 
-Add-Label "Complete BitsPleaseYT Solo Pool v2.0.0 Setup" 28 $yBase 560 $true 13 | Out-Null
+Add-Label "Complete BitsPleaseYT Solo Pool v3.0.0 Setup" 28 $yBase 560 $true 13 | Out-Null
 Add-Label "Fill in your ZCL wallet details below, then click Complete Setup." 28 ($yBase+30) 560 | Out-Null
 
 $y = $yBase + 70

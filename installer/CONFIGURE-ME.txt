@@ -1,4 +1,4 @@
-BitsPleaseYT Solo Pools Version 2.0.0 - Configuration Guide
+BitsPleaseYT Solo Pools Version 3.0.0 - Configuration Guide
 =============================================================
 
 INSTALLATION IS TWO PHASES:
