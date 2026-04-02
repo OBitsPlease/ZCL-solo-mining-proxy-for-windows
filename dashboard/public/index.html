@@ -409,7 +409,7 @@
         <div class="panel-body">
           <div class="payout-form">
             <div class="form-row">
-              <span class="form-label">Min. Payment (ZCL)</span>
+              <span class="form-label" id="min-payment-label">Min. Payment (ZCL)</span>
               <input class="form-input" type="number" id="payout-input" step="0.001" min="0.001" placeholder="0.01">
               <button class="btn btn-sm" id="payout-btn" onclick="saveMinPayout()">Save</button>
             </div>
@@ -424,7 +424,7 @@
               </div>
               <div style="font-size:0.75em;color:#888;margin-top:-2px">🔒 Must match the IP your miner connects from</div>
               <div style="display:flex;gap:8px;margin-top:4px">
-                <input class="form-input" type="number" id="miner-thresh-input" step="0.001" min="0" placeholder="ZCL">
+                <input class="form-input" type="number" id="miner-thresh-input" step="0.001" min="0" placeholder="Amount">
                 <button class="btn btn-sm" onclick="saveMinerThreshold()">Set</button>
                 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="getMinerThreshold()">Get</button>
               </div>
@@ -486,7 +486,7 @@
       <table>
         <thead><tr>
           <th>Address</th>
-          <th>Amount (ZCL)</th>
+          <th id="payments-amount-header">Amount (ZCL)</th>
           <th>TX</th>
           <th>Date</th>
         </tr></thead>
@@ -570,6 +570,11 @@ function applyPoolMeta(meta) {
     document.getElementById('price-label').textContent   = `${meta.symbol} Price`;
     document.getElementById('price-sub').textContent     = `USD per ${meta.symbol}`;
     document.title = `${meta.name} Solo Pool Dashboard by BitsPleaseYT`;
+    // Update coin symbol labels
+    const minPayLabel = document.getElementById('min-payment-label');
+    if (minPayLabel) minPayLabel.textContent = `Min. Payment (${meta.symbol})`;
+    const paymentsHeader = document.getElementById('payments-amount-header');
+    if (paymentsHeader) paymentsHeader.textContent = `Amount (${meta.symbol})`;
     // Update all tab button styles
     document.querySelectorAll('[id^="tab-"]').forEach(btn => {
         const isActive = btn.id === `tab-${POOL_ID}`;
@@ -1007,7 +1012,7 @@ async function loadBlocks() {
               <td><span class="tag ${tagClass}">${b.status || '–'}</span></td>
               <td>${maturityCell}</td>
               <td style="font-size:12px;${effortColor}">${effort}</td>
-              <td class="mono">${(b.reward || 0).toFixed(4)} ZCL</td>
+              <td class="mono">${(b.reward || 0).toFixed(4)} ${POOL_SYMBOL}</td>
               <td><span class="worker-chip" style="font-size:11px"><span class="dot"></span>${workerName}</span></td>
               <td class="mono addr" title="${b.miner}" style="font-size:11px">${fmtAddr(b.miner)}</td>
               <td style="color:var(--muted);font-size:12px">${fmtTime(b.created)}</td>
