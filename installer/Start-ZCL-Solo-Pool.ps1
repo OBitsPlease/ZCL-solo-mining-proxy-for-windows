@@ -1,8 +1,8 @@
 # ============================================================
-#  ZClassic Solo Pool Launcher  (portable - uses $PSScriptRoot)
+#  BitsPleaseYT Solo Pool v2.0.0 Launcher  (portable - uses $PSScriptRoot)
 # ============================================================
 
-$Host.UI.RawUI.WindowTitle = "ZClassic Solo Pool"
+$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v2.0.0"
 
 $INSTALL_DIR = $PSScriptRoot
 $ZCL_DIR     = "$INSTALL_DIR\zcl"
@@ -161,7 +161,7 @@ $monProc = Start-Process -FilePath "pwsh" -ArgumentList $monitorArgs -PassThru -
 Write-OK "Block orphan recovery monitor running (PID $($monProc.Id))."
 
 # ---- Step 5: MiningCore ----------------------------------------
-Write-Step "Starting MiningCore ZClassic Solo Pool..."
+Write-Step "Starting MiningCore BitsPleaseYT Solo Pool..."
 Write-Host "    Pool port: 3032  |  Config: $MC_CONFIG" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Magenta

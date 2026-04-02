@@ -1,0 +1,112 @@
+BitsPleaseYT Solo Pool Version 2.0.0 - Configuration Guide
+==========================================================
+
+INSTALLATION IS TWO PHASES:
+
+PHASE 1 - DONE (installer just ran)
+--------------------------------------
+ZClassic daemon, wallet, and pool files are installed.
+The ZCL Wallet may have opened automatically.
+
+Let the wallet FULLY SYNC before proceeding to Phase 2.
+Sync can take 1-3 days on a new PC.
+You'll see "Synced" or 100% progress in the wallet.
+
+PHASE 2 - After blockchain is synced
+--------------------------------------
+Double-click the "Finish ZCL Pool Setup" icon on your Desktop.
+A setup window will appear asking for:
+
+  1. Your ZCL t-address  (starts with t1, 35 characters)
+     - This is where ALL block rewards go (you get 98%)
+     - Get it from the "Receive" tab in ZCL Wallet
+     - 2% dev fee goes to BitsPlease YT automatically
+
+  2. Your ZCL z-address  (optional, starts with zs1)
+
+  3. RPC Username & Password
+     - These can be anything you choose
+     - They secure communication between the pool and daemon
+     - A strong random password is pre-filled for you
+
+After completing Phase 2:
+  - PostgreSQL database is created
+  - Pool config is patched with your addresses
+  - "Start ZCL Solo Pool" desktop icon is created
+  - "Finish ZCL Pool Setup" icon is removed
+
+STARTING THE POOL
+------------------
+Double-click "Start ZCL Solo Pool" on your Desktop.
+Then point your miner to:
+  stratum+tcp://YOUR-PC-IP:3032
+  Worker: your ZCL t1... address
+
+Dashboard:  http://localhost:8080
+
+DEV FEE
+--------
+A 2% dev fee is automatically deducted from each block reward.
+It is paid to: t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb (BitsPlease YT)
+You receive 98% of every block found.
+
+FILES
+------
+  config\zclassic_solo_pool.json  - Pool configuration
+  miningcore\                     - MiningCore mining server
+  zcl\                            - ZClassic daemon + wallet
+  dashboard\                      - Web dashboard (Node.js)
+  Watch-BlockOrphans.ps1          - Auto orphan recovery monitor
+
+
+Before starting the pool for the first time, complete these steps:
+
+STEP 1 - Sync the ZClassic blockchain
+--------------------------------------
+Open zclwallet.exe and wait for it to fully sync.
+This can take 1-3 days on a new PC.
+The wallet must be fully synced before mining.
+
+STEP 2 - Get your mining address
+----------------------------------
+In zclwallet, go to Receive and copy your transparent (t1...) address.
+This address will receive all block rewards.
+
+STEP 3 - Set your RPC credentials
+-----------------------------------
+Edit: %APPDATA%\ZClassic\zclassic.conf
+  - Set rpcuser to any username you choose
+  - Set rpcpassword to any strong password you choose
+
+STEP 4 - Update the pool config
+---------------------------------
+Edit: config\zclassic_solo_pool.json
+  - Replace "YOUR_ZCL_ADDRESS_HERE" with your t1... address (2 places)
+  - Replace "YOUR_RPC_USER" with the rpcuser from zclassic.conf
+  - Replace "YOUR_RPC_PASSWORD" with the rpcpassword from zclassic.conf
+
+STEP 5 - Start the pool
+-------------------------
+Double-click "Start ZCL Solo Pool" on your desktop.
+Then point your miner to:
+  stratum+tcp://YOUR-PC-IP:3032
+  Worker: your ZCL t1... address
+
+Dashboard is available at:  http://localhost:8080
+
+TROUBLESHOOTING
+---------------
+- If the pool can't connect to the daemon, check zclassic.conf rpcuser/password
+  match zclassic_solo_pool.json daemons section.
+- If blocks show as orphaned, make sure the wallet is fully synced.
+- PostgreSQL must be running (it starts automatically as a Windows service).
+- Node.js must be installed for the dashboard to work.
+
+Files:
+  config\zclassic_solo_pool.json   - Pool configuration
+  config\zclassic.conf.template    - ZClassic daemon config template
+  miningcore\                      - MiningCore mining server
+  zcl\                             - ZClassic daemon binaries
+  dashboard\                       - Web dashboard
+  Watch-BlockOrphans.ps1           - Auto orphan recovery monitor
+  paths.json                       - Install paths (auto-generated)

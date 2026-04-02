@@ -1,5 +1,5 @@
 ; ============================================================
-;  ZClassic Solo Pool - Inno Setup Installer Script
+;  BitsPleaseYT Solo Pool v2.0.0 - Inno Setup Installer Script
 ;  Created by BitsPlease YT
 ;  Two-phase install:
 ;    Phase 1: Extract all files + install ZCL daemon/wallet

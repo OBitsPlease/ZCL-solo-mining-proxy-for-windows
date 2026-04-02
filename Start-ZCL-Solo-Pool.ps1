@@ -1,8 +1,8 @@
 ﻿# ============================================================
-#  ZClassic Solo Pool Launcher
+#  BitsPleaseYT Solo Pool v2.0.0 Launcher
 # ============================================================
 
-$Host.UI.RawUI.WindowTitle = "ZClassic Solo Pool"
+$Host.UI.RawUI.WindowTitle = "BitsPleaseYT Solo Pool v2.0.0"
 $ZCL_DIR   = "C:\Users\tourj\OneDrive\Documents\MINING MINING MINING\WALLETS\ZCLASSIC\zclassic-2-1-1-60-windows-gui-x86_64\zclassic-2-1-1-60-windows-gui-x86_64"
 $ZCL_CONF  = "$env:APPDATA\ZClassic\zclassic.conf"
 $MC_DIR    = "C:\Users\tourj\mining core\build"
@@ -88,7 +88,7 @@ $importResult = & "$ZCL_DIR\zclassic-cli.exe" importaddress $poolAddr "" false 2
 Write-OK "Pool address imported into wallet (prevents false orphans)."
 
 # ---- Step 3: Launch MiningCore ---------------------------------
-Write-Step "Starting MiningCore ZClassic Solo Pool..."
+Write-Step "Starting MiningCore BitsPleaseYT Solo Pool..."
 Write-Host "    Pool will listen for miners on port 3032" -ForegroundColor Yellow
 Write-Host "    Config: $MC_CONFIG" -ForegroundColor DarkGray
 Write-Host ""

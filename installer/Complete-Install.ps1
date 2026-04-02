@@ -1,5 +1,5 @@
 # ============================================================
-#  ZClassic Solo Pool - Phase 2 Setup (Run after blockchain sync)
+#  BitsPleaseYT Solo Pool v2.0.0 - Phase 2 Setup (Run after blockchain sync)
 #  Shows GUI form to collect user settings, installs dependencies
 # ============================================================
 
@@ -68,7 +68,7 @@ function Add-TextBox($default, $x, $y, $w=560) {
     return $tb
 }
 
-Add-Label "Complete ZClassic Solo Pool Setup" 28 $yBase 560 $true 13 | Out-Null
+Add-Label "Complete BitsPleaseYT Solo Pool v2.0.0 Setup" 28 $yBase 560 $true 13 | Out-Null
 Add-Label "Fill in your ZCL wallet details below, then click Complete Setup." 28 ($yBase+30) 560 | Out-Null
 
 $y = $yBase + 70
