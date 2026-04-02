@@ -33,54 +33,86 @@ function Stop-WithError($msg) {
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+$bgImagePath = "C:\Users\tourj\mining core\installer\coin-select-bg.png"
+
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "BitsPleaseYT Solo Pool v2.0.0 - Select Coins"
-$form.Size = New-Object System.Drawing.Size(340, 220)
+$form.Text = "BitsPleaseYT Solo Pool v2.0.0"
+$form.Size = New-Object System.Drawing.Size(720, 460)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
-$form.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
+
+# Background image stretched to full form
+if (Test-Path $bgImagePath) {
+    $bgImage = [System.Drawing.Image]::FromFile($bgImagePath)
+    $form.Add_Paint({
+        param($s, $e)
+        $e.Graphics.DrawImage($bgImage, 0, 0, $s.ClientSize.Width, $s.ClientSize.Height)
+    })
+} else {
+    $bgImage = $null
+    $form.BackColor = [System.Drawing.Color]::FromArgb(20, 20, 35)
+}
+
+# Slim dark bottom bar — full width, ~110px at bottom
+$bar = New-Object System.Windows.Forms.Panel
+$bar.Size = New-Object System.Drawing.Size(704, 110)
+$bar.Location = New-Object System.Drawing.Point(0, 325)
+$bar.BackColor = [System.Drawing.Color]::FromArgb(210, 10, 10, 30)
+$form.Controls.Add($bar)
+
+# Gold top border line on bar
+$bar.Add_Paint({
+    param($s, $e)
+    $pen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(200, 160, 60), 2)
+    $e.Graphics.DrawLine($pen, 0, 0, $s.Width, 0)
+    $pen.Dispose()
+})
 
 $lbl = New-Object System.Windows.Forms.Label
 $lbl.Text = "Select coins to start:"
-$lbl.ForeColor = [System.Drawing.Color]::White
-$lbl.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
-$lbl.Location = New-Object System.Drawing.Point(20, 18)
+$lbl.ForeColor = [System.Drawing.Color]::FromArgb(220, 180, 60)
+$lbl.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$lbl.Location = New-Object System.Drawing.Point(18, 12)
+$lbl.BackColor = [System.Drawing.Color]::Transparent
 $lbl.AutoSize = $true
-$form.Controls.Add($lbl)
+$bar.Controls.Add($lbl)
 
 $chkZCL = New-Object System.Windows.Forms.CheckBox
-$chkZCL.Text = "ZClassic (ZCL)  —  port 3032"
+$chkZCL.Text = "ZClassic (ZCL)  — port 3032"
 $chkZCL.ForeColor = [System.Drawing.Color]::White
 $chkZCL.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$chkZCL.Location = New-Object System.Drawing.Point(30, 55)
-$chkZCL.Size = New-Object System.Drawing.Size(270, 28)
+$chkZCL.Location = New-Object System.Drawing.Point(18, 42)
+$chkZCL.Size = New-Object System.Drawing.Size(240, 26)
+$chkZCL.BackColor = [System.Drawing.Color]::Transparent
 $chkZCL.Checked = $true
-$form.Controls.Add($chkZCL)
+$bar.Controls.Add($chkZCL)
 
 $chkVTC = New-Object System.Windows.Forms.CheckBox
-$chkVTC.Text = "Vertcoin (VTC)  —  port 3033"
+$chkVTC.Text = "Vertcoin (VTC)  — port 3052"
 $chkVTC.ForeColor = [System.Drawing.Color]::White
 $chkVTC.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-$chkVTC.Location = New-Object System.Drawing.Point(30, 90)
-$chkVTC.Size = New-Object System.Drawing.Size(270, 28)
+$chkVTC.Location = New-Object System.Drawing.Point(270, 42)
+$chkVTC.Size = New-Object System.Drawing.Size(240, 26)
+$chkVTC.BackColor = [System.Drawing.Color]::Transparent
 $chkVTC.Checked = $true
-$form.Controls.Add($chkVTC)
+$bar.Controls.Add($chkVTC)
 
 $btnStart = New-Object System.Windows.Forms.Button
-$btnStart.Text = "Start Pool"
+$btnStart.Text = "▶  Start Pool"
 $btnStart.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$btnStart.Location = New-Object System.Drawing.Point(100, 135)
-$btnStart.Size = New-Object System.Drawing.Size(120, 36)
-$btnStart.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 60)
+$btnStart.Location = New-Object System.Drawing.Point(560, 34)
+$btnStart.Size = New-Object System.Drawing.Size(130, 38)
+$btnStart.BackColor = [System.Drawing.Color]::FromArgb(0, 140, 60)
 $btnStart.ForeColor = [System.Drawing.Color]::White
 $btnStart.FlatStyle = "Flat"
 $btnStart.DialogResult = [System.Windows.Forms.DialogResult]::OK
-$form.Controls.Add($btnStart)
+$bar.Controls.Add($btnStart)
 $form.AcceptButton = $btnStart
 
 $result = $form.ShowDialog()
+if ($bgImage) { $bgImage.Dispose() }
 if ($result -ne [System.Windows.Forms.DialogResult]::OK) { exit 0 }
 
 # Validate at least one coin selected
