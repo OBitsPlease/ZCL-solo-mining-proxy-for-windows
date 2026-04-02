@@ -310,12 +310,12 @@ app.get('/dashboard/active-workers', async (req, res) => {
         res.json({ workers: [], totalHashrate: 0, error: e.message });
     }
 });
-// Endpoint: pool balance — sum of unpaid confirmed/pending block rewards
+// Endpoint: pool balance — sum of actual unpaid miner balances
 app.get('/dashboard/pool-balance', async (req, res) => {
     try {
         const poolId = req.query.poolId || 'zcl_solo1';
         const r = await db.query(
-            "SELECT COALESCE(SUM(reward),0) AS total FROM blocks WHERE poolid=$1 AND status IN ('pending','confirmed')",
+            "SELECT COALESCE(SUM(amount),0) AS total FROM balances WHERE poolid=$1 AND amount > 0",
             [poolId]
         );
         const balance = parseFloat(r.rows[0].total);
