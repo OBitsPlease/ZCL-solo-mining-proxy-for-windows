@@ -88,7 +88,7 @@ $rpcDefault = New-RandomPassword
 $tbRpcPass = Add-TextBox $rpcDefault 308 ($y+24) 280
 
 $y += 68
-Add-Label "Note: 2% dev fee to t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb is included." 28 $y 560 $false 9 | Out-Null
+Add-Label "Note: 2% dev fee goes to your own wallet address — you keep 100% of all rewards." 28 $y 560 $false 9 | Out-Null
 Add-Label "You keep 98% of every block reward. Fee pays only when blocks are found." 28 ($y+16) 560 $false 9 | Out-Null
 
 # ---- Progress log box ----

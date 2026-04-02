@@ -35,7 +35,7 @@
             "address": "YOUR_ZCL_ADDRESS_HERE",
             "rewardRecipients": [
                 {
-                    "address": "t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb",
+                    "address": "YOUR_ZCL_ADDRESS_HERE",
                     "percentage": 2
                 }
             ],

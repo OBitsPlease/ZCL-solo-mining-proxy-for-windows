@@ -47,7 +47,7 @@ Dashboard:  http://localhost:8080
 DEV FEE
 --------
 A 2% dev fee is automatically deducted from each block reward.
-It is paid to: t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb (BitsPlease YT)
+It is paid to your own ZCL address (set during setup) — you keep 100% of all rewards.
 You receive 98% of every block found.
 
 FILES
