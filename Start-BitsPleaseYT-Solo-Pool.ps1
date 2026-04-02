@@ -286,15 +286,28 @@ Generated: $(Get-Date)
     Write-Host "    cloudflared not found — remote access skipped. Run: winget install Cloudflare.cloudflared" -ForegroundColor Yellow
 }
 
-# Start false-orphan recovery monitor in background
-$monitorArgs = @(
-    "-NonInteractive", "-WindowStyle", "Hidden",
-    "-File", "C:\Users\tourj\mining core\Watch-BlockOrphans.ps1",
-    "-ZclDir", "`"$ZCL_DIR`"",
-    "-PsqlBin", "`"$PSQL_BIN`""
-)
-$monProc = Start-Process -FilePath "pwsh" -ArgumentList $monitorArgs -PassThru -WindowStyle Hidden
-Write-OK "Block orphan recovery monitor running (PID $($monProc.Id))."
+# Start false-orphan recovery monitor(s) in background
+if ($START_ZCL) {
+    $monitorArgs = @(
+        "-NonInteractive", "-WindowStyle", "Hidden",
+        "-File", "C:\Users\tourj\mining core\Watch-BlockOrphans.ps1",
+        "-ZclDir", "`"$ZCL_DIR`"",
+        "-PsqlBin", "`"$PSQL_BIN`""
+    )
+    $monProc = Start-Process -FilePath "pwsh" -ArgumentList $monitorArgs -PassThru -WindowStyle Hidden
+    Write-OK "ZCL orphan recovery monitor running (PID $($monProc.Id))."
+}
+
+if ($START_VTC) {
+    $vtcMonitorArgs = @(
+        "-NonInteractive", "-WindowStyle", "Hidden",
+        "-File", "C:\Users\tourj\mining core\Watch-VTC-BlockOrphans.ps1",
+        "-VtcCli", "`"$VTC_CLI`"",
+        "-PsqlBin", "`"$PSQL_BIN`""
+    )
+    $vtcMonProc = Start-Process -FilePath "pwsh" -ArgumentList $vtcMonitorArgs -PassThru -WindowStyle Hidden
+    Write-OK "VTC orphan recovery monitor running (PID $($vtcMonProc.Id))."
+}
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Magenta
@@ -330,10 +343,11 @@ Set-Location $MC_DIR
     }
 }
 
-# Stop dashboard, tunnel and monitor when pool exits
-if ($dashProc -and -not $dashProc.HasExited) { Stop-Process -Id $dashProc.Id -ErrorAction SilentlyContinue }
-if ($cfProc   -and -not $cfProc.HasExited)   { Stop-Process -Id $cfProc.Id   -ErrorAction SilentlyContinue }
-if ($monProc  -and -not $monProc.HasExited)  { Stop-Process -Id $monProc.Id  -ErrorAction SilentlyContinue }
+# Stop dashboard, tunnel and monitors when pool exits
+if ($dashProc   -and -not $dashProc.HasExited)   { Stop-Process -Id $dashProc.Id   -ErrorAction SilentlyContinue }
+if ($cfProc     -and -not $cfProc.HasExited)     { Stop-Process -Id $cfProc.Id     -ErrorAction SilentlyContinue }
+if ($monProc    -and -not $monProc.HasExited)    { Stop-Process -Id $monProc.Id    -ErrorAction SilentlyContinue }
+if ($vtcMonProc -and -not $vtcMonProc.HasExited) { Stop-Process -Id $vtcMonProc.Id -ErrorAction SilentlyContinue }
 
 # Keep window open if pool exits
 Write-Host ""

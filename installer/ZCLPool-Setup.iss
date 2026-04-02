@@ -61,7 +61,8 @@ Source: "{#SrcRoot}\dashboard\public\*";          DestDir: "{app}\dashboard\publ
 
 ; ---- Launcher, monitor, phase-2 setup scripts ----
 Source: "Start-BitsPleaseYT-Solo-Pool.ps1"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SrcRoot}\Watch-BlockOrphans.ps1"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SrcRoot}\Watch-BlockOrphans.ps1";     DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SrcRoot}\Watch-VTC-BlockOrphans.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Complete-Install.ps1";         DestDir: "{app}"; Flags: ignoreversion
 
 ; ---- Config templates ----
