@@ -290,7 +290,7 @@ Generated: $(Get-Date)
 if ($START_ZCL) {
     $monitorArgs = @(
         "-NonInteractive", "-WindowStyle", "Hidden",
-        "-File", "C:\Users\tourj\mining core\Watch-BlockOrphans.ps1",
+        "-File", "C:\Users\tourj\mining core\Watch-ZCL-BlockOrphans.ps1",
         "-ZclDir", "`"$ZCL_DIR`"",
         "-PsqlBin", "`"$PSQL_BIN`""
     )

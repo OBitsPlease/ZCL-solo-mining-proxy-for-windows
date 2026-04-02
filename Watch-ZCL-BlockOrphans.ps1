@@ -16,9 +16,18 @@ param(
 $env:PATH = "$PsqlBin;$env:PATH"
 $env:PGPASSWORD = $DbPassword
 
+$LogDir  = "C:\Users\tourj\mining core\build\logs"
+$LogFile = "$LogDir\zcl-orphan-monitor.log"
+New-Item -ItemType Directory -Force $LogDir | Out-Null
+
 function Write-Monitor($msg, $color = "DarkGray") {
     $ts = Get-Date -Format "HH:mm:ss"
-    Write-Host "[$ts] [BlockMonitor] $msg" -ForegroundColor $color
+    Write-Host "[$ts] [ZCL-BlockMonitor] $msg" -ForegroundColor $color
+}
+
+function Write-Log($msg) {
+    $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "[$ts] $msg" | Add-Content -Path $LogFile
 }
 
 function Invoke-Psql($sql) {
@@ -26,6 +35,7 @@ function Invoke-Psql($sql) {
 }
 
 Write-Monitor "Started. Checking for false orphans every $IntervalSeconds seconds." "Cyan"
+Write-Log "Monitor started. Pool: $PoolId"
 
 while ($true) {
     Start-Sleep -Seconds $IntervalSeconds
@@ -54,6 +64,7 @@ while ($true) {
 
             if ($LASTEXITCODE -ne 0 -or $chainHash -match "error") {
                 Write-Monitor "Could not getblockhash for block $blockHeight (daemon error)" "Yellow"
+                Write-Log "ERROR: Could not getblockhash for block $blockHeight"
                 continue
             }
 
@@ -63,11 +74,14 @@ while ($true) {
                 # Block IS on the main chain — false orphan, reset to pending
                 Invoke-Psql "UPDATE blocks SET status='pending', confirmationprogress=0 WHERE id=$id;" | Out-Null
                 Write-Monitor "RECOVERED block $blockHeight — hash matched chain, reset to pending." "Green"
+                Write-Log "RECOVERED: Block $blockHeight (id=$id) was false orphan — reset to pending. Hash: $storedHash"
             } else {
                 Write-Monitor "Block $blockHeight is a true orphan (chain hash $($chainHash.Substring(0,12))… != stored $($storedHash.Substring(0,12))…)" "Yellow"
+                Write-Log "ORPHAN: Block $blockHeight (id=$id) confirmed true orphan. Chain: $chainHash | Stored: $storedHash"
             }
         }
     } catch {
         Write-Monitor "Monitor error: $_" "Red"
+        Write-Log "ERROR: $_"
     }
 }
