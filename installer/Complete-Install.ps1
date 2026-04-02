@@ -278,7 +278,7 @@ txindex=1
 
     $startLink = $WShell.CreateShortcut("$env:PUBLIC\Desktop\BitsPlease Solo Pool.lnk")
     $startLink.TargetPath  = "pwsh.exe"
-    $startLink.Arguments   = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\Start-ZCL-Solo-Pool.ps1`""
+    $startLink.Arguments   = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\Start-BitsPleaseYT-Solo-Pool.ps1`""
     $startLink.WorkingDirectory = $INSTALL_DIR
     $startLink.Description = "BitsPlease Solo Pool"
     $startLink.IconLocation = "$INSTALL_DIR\mining.ico,0"

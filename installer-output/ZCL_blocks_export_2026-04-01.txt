@@ -1,0 +1,35 @@
+ZCL BLOCKS FOUND - EXPORT DATE: 2026-04-01
+==========================================
+Miner Address: t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb
+Pool Address (old, watch-only): t1dDviqfWMf4kJLbtSJbLCmk9DAYD9fTa5W
+Pool Address (new, owned): t1WD3kv2zDpY4sCDks745xbqER4wjx8zpLP
+Total Blocks: 20
+Total Reward: ~7.8125 ZCL
+
+Block#      | Date/Time (UTC)          | Block Hash                                                       | Reward      | Worker                   | Status
+------------|--------------------------|------------------------------------------------------------------|-------------|--------------------------|----------
+3062793     | 2026-04-01 05:41:33      | 000007fd50b44b56cec15717f5d4623645f39bc3b149c038d4ea9eaff9ff0747 | 0.39062500  | -                        | confirmed
+3062824     | 2026-04-01 06:13:03      | 000001bffb38ffda28c1db05a55395af174c4cde1f0cfa92462b500fd3c8416c | 0.39062500  | -                        | confirmed
+3062826     | 2026-04-01 06:15:25      | 0000014db5ff2fb03768d45c383bff3b7de198623ea175c5209becaf2a8c3cc9 | 0.39062500  | -                        | confirmed
+3062833     | 2026-04-01 06:24:40      | 00000717256f62980b423a4c73557a9bfd5f0d643e31f5afd19c9072a0153864 | 0.39062500  | -                        | confirmed
+3062843     | 2026-04-01 06:34:24      | 0000048834e65d6c5a642a0c7ca18f671e7a0a3c15e5b7b70702ce408769c186 | 0.39062500  | -                        | confirmed
+3062898     | 2026-04-01 07:47:08      | 000001148e593709430253c2eb56ee99b87c1ac38e25576672f888a70cc0bb8e | 0.39062500  | -                        | confirmed
+3062923     | 2026-04-01 08:33:14      | 00000109080b07a32cda4e3745f82cddf54a03cc0ca2df6c9872f234c9331cf5 | 0.39062500  | -                        | confirmed
+3062961     | 2026-04-01 09:10:57      | 000007bf7081102e6de040550526094c1dfb50c8dc031b7f97b0f0ad9ab0cf96 | 0.39062500  | -                        | confirmed
+3062963     | 2026-04-01 09:15:08      | 0000075046c691ba61cc1e131ca79bfa80926ed86ee74aa8d4a57f47a1924ce5 | 0.39062500  | -                        | confirmed
+3063038     | 2026-04-01 10:51:36      | 0000073fad1a861cf3b4717700922081506860a191db1158d97f904bb06d9819 | 0.39062500  | -                        | confirmed
+3063043     | 2026-04-01 10:56:51      | 000002ac450a213bce3dec8621ad8083ac70b2b74e255fbe8df29e5b417cdf35 | 0.39062500  | -                        | confirmed
+3063179     | 2026-04-01 13:42:45      | 000006f9fb1b46ff46a596682b67e0f2cee426e9fd8d8c85cf0d880e0fc71c29 | 0.39062500  | BitsPlease3060ti         | confirmed
+3063184     | 2026-04-01 13:49:42      | 000004c73e9f07a294b26dbee42aab9b0c6426ce0d6bc765d6be88bc80e88f7f | 0.39062500  | BitsPlease3060ti         | confirmed
+3063224     | 2026-04-01 14:45:09      | 000000c68d5c0d3ab8646de9665f3ff946466199b2f056a80f6214e2dbcadec0 | 0.39072500  | BitsPlease3060ti         | confirmed
+3063312     | 2026-04-01 16:38:39      | 00000871984a4d8a4a57d07000f7734f1279d2c91baefa36fac74fd8b2fa0304 | 0.39062500  | BitsPleaseCMP100210      | confirmed
+3063315     | 2026-04-01 16:43:39      | 000003214d6a8571175feff39da003565bdbc3e8cc265f1ff6a29d947d40a81e | 0.39062500  | BitsPlease3060ti         | confirmed
+3063435     | 2026-04-01 19:08:56      | 00000932280e0f23c5d47a407b3d53f0b8f9ab4e3fdf7e022caea09968d55366 | 0.39062500  | BitsPleaseCMP100210      | pending
+3063440     | 2026-04-01 19:13:42      | 000005ae18377f6f76d85e698c88210064c2b10532c9001aa695efd57a3cf1ac | 0.39062500  | BitsPleaseCMP100210      | pending
+3063445     | 2026-04-01 19:19:39      | 000003699d437cb924e44369ba0a4c441b78ff65bd2e7f619fc1c53206d7dea7 | 0.39062500  | BitsPleaseCMP100210      | pending
+3063486     | 2026-04-01 20:21:05      | 0000017123f93da38b3dc23520da350ff0fc3aeee25109f7719741beb3ce4068 | 0.39062500  | BitsPlease3060ti         | pending
+
+NOTE: Each block hash can be verified on any ZClassic block explorer.
+Each block was mined by address t1Kj7QD3sr4zExos5M9vHYz5di8T5H5Vqtb (your wallet).
+Coinbase rewards went to pool address t1dDviqfWMf4kJLbtSJbLCmk9DAYD9fTa5W.
+To claim coins, import the private key for t1dDviqfWMf4kJLbtSJbLCmk9DAYD9fTa5W into a ZClassic wallet.

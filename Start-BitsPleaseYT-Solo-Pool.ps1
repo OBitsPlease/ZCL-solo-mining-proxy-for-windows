@@ -223,7 +223,7 @@ Write-OK "vertcoind running. Block height: $vtcBlocks"
 Write-Step "Starting MiningCore BitsPleaseYT Solo Pool..."
 $activePorts = @()
 if ($START_ZCL) { $activePorts += "ZCL port 3032" }
-if ($START_VTC) { $activePorts += "VTC port 3033" }
+if ($START_VTC) { $activePorts += "VTC port 3052" }
 Write-Host "    Pool listening on: $($activePorts -join ' | ')" -ForegroundColor Yellow
 Write-Host "    Config: $MC_CONFIG_ACTIVE" -ForegroundColor DarkGray
 Write-Host ""

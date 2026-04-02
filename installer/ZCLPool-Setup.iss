@@ -60,7 +60,7 @@ Source: "{#SrcRoot}\dashboard\public\*";          DestDir: "{app}\dashboard\publ
     Flags: recursesubdirs createallsubdirs ignoreversion
 
 ; ---- Launcher, monitor, phase-2 setup scripts ----
-Source: "Start-ZCL-Solo-Pool.ps1";      DestDir: "{app}"; Flags: ignoreversion
+Source: "Start-BitsPleaseYT-Solo-Pool.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SrcRoot}\Watch-BlockOrphans.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Complete-Install.ps1";         DestDir: "{app}"; Flags: ignoreversion
 
