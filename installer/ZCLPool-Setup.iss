@@ -84,6 +84,7 @@ Source: "mining.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; ---- Help file ----
 Source: "CONFIGURE-ME.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "BitsPleaseYT Solo Pool Version 3 updates.md"; DestDir: "{app}"; Flags: ignoreversion
 
 ; ---- BMP splash for pre-wizard splash form ----
 Source: "splash.bmp"; DestDir: "{tmp}"; Flags: deleteafterinstall
