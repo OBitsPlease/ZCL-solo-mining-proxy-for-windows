@@ -10,19 +10,17 @@ $MC_CONFIG = "$MC_DIR\zclassic_solo_pool.json"
 $PSQL_BIN  = "C:\PostgreSQL\15\bin"
 $env:PATH  = "$PSQL_BIN;$env:PATH"
 
+$paths     = Get-Content "C:\Users\tourj\mining core\paths.json" | ConvertFrom-Json
+$VTC_CLI   = $paths.vtcCli
+$VTC_DIR   = Split-Path $VTC_CLI
+$VTC_CONF  = "$env:APPDATA\Vertcoin\vertcoin.conf"
+
 function Write-Step($msg) {
     Write-Host ""
     Write-Host ">>> $msg" -ForegroundColor Cyan
 }
-
-function Write-OK($msg) {
-    Write-Host "    [OK] $msg" -ForegroundColor Green
-}
-
-function Write-Fail($msg) {
-    Write-Host "    [!!] $msg" -ForegroundColor Red
-}
-
+function Write-OK($msg)   { Write-Host "    [OK] $msg" -ForegroundColor Green }
+function Write-Fail($msg) { Write-Host "    [!!] $msg" -ForegroundColor Red }
 function Stop-WithError($msg) {
     Write-Fail $msg
     Write-Host ""
@@ -30,6 +28,81 @@ function Stop-WithError($msg) {
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit 1
 }
+
+# ---- Coin Selection Popup ----------------------------------------
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "BitsPleaseYT Solo Pool v2.0.0 - Select Coins"
+$form.Size = New-Object System.Drawing.Size(340, 220)
+$form.StartPosition = "CenterScreen"
+$form.FormBorderStyle = "FixedDialog"
+$form.MaximizeBox = $false
+$form.MinimizeBox = $false
+$form.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
+
+$lbl = New-Object System.Windows.Forms.Label
+$lbl.Text = "Select coins to start:"
+$lbl.ForeColor = [System.Drawing.Color]::White
+$lbl.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+$lbl.Location = New-Object System.Drawing.Point(20, 18)
+$lbl.AutoSize = $true
+$form.Controls.Add($lbl)
+
+$chkZCL = New-Object System.Windows.Forms.CheckBox
+$chkZCL.Text = "ZClassic (ZCL)  —  port 3032"
+$chkZCL.ForeColor = [System.Drawing.Color]::White
+$chkZCL.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$chkZCL.Location = New-Object System.Drawing.Point(30, 55)
+$chkZCL.Size = New-Object System.Drawing.Size(270, 28)
+$chkZCL.Checked = $true
+$form.Controls.Add($chkZCL)
+
+$chkVTC = New-Object System.Windows.Forms.CheckBox
+$chkVTC.Text = "Vertcoin (VTC)  —  port 3033"
+$chkVTC.ForeColor = [System.Drawing.Color]::White
+$chkVTC.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+$chkVTC.Location = New-Object System.Drawing.Point(30, 90)
+$chkVTC.Size = New-Object System.Drawing.Size(270, 28)
+$chkVTC.Checked = $true
+$form.Controls.Add($chkVTC)
+
+$btnStart = New-Object System.Windows.Forms.Button
+$btnStart.Text = "Start Pool"
+$btnStart.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$btnStart.Location = New-Object System.Drawing.Point(100, 135)
+$btnStart.Size = New-Object System.Drawing.Size(120, 36)
+$btnStart.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 60)
+$btnStart.ForeColor = [System.Drawing.Color]::White
+$btnStart.FlatStyle = "Flat"
+$btnStart.DialogResult = [System.Windows.Forms.DialogResult]::OK
+$form.Controls.Add($btnStart)
+$form.AcceptButton = $btnStart
+
+$result = $form.ShowDialog()
+if ($result -ne [System.Windows.Forms.DialogResult]::OK) { exit 0 }
+
+# Validate at least one coin selected
+if (-not $chkZCL.Checked -and -not $chkVTC.Checked) {
+    [System.Windows.Forms.MessageBox]::Show("Please select at least one coin.", "No Coin Selected",
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+    exit 0
+}
+
+$START_ZCL = $chkZCL.Checked
+$START_VTC = $chkVTC.Checked
+
+# Build a temporary pool config with only selected pools
+$fullCfg = Get-Content $MC_CONFIG | ConvertFrom-Json
+$selectedPools = @()
+if ($START_ZCL) { $selectedPools += $fullCfg.pools | Where-Object { $_.id -eq "zcl_solo1" } }
+if ($START_VTC) { $selectedPools += $fullCfg.pools | Where-Object { $_.id -eq "vtc_solo1" } }
+$fullCfg.pools = $selectedPools
+$MC_CONFIG_ACTIVE = "$MC_DIR\active_pool.json"
+$fullCfg | ConvertTo-Json -Depth 20 | Set-Content $MC_CONFIG_ACTIVE -Encoding UTF8
+
+Write-Host "Starting with coins: $(($selectedPools | Select-Object -ExpandProperty id) -join ', ')" -ForegroundColor Cyan
 
 # ---- Step 1: PostgreSQL ----------------------------------------
 Write-Step "Checking PostgreSQL service..."
@@ -50,6 +123,7 @@ if ($pg.Status -eq "Running") {
 }
 
 # ---- Step 2: ZClassic Daemon -----------------------------------
+if ($START_ZCL) {
 Write-Step "Checking ZClassic daemon (zclassicd)..."
 $zclProc = Get-Process -Name "zclassicd" -ErrorAction SilentlyContinue
 if ($null -eq $zclProc) {
@@ -83,14 +157,43 @@ if ($blockMatch.Success) {
 
 # Ensure pool address is imported so gettransaction works (prevents false orphans)
 $poolCfg = Get-Content "$MC_CONFIG" | ConvertFrom-Json
-$poolAddr = $poolCfg.pools[0].address
+$poolAddr = ($poolCfg.pools | Where-Object { $_.id -eq "zcl_solo1" }).address
 $importResult = & "$ZCL_DIR\zclassic-cli.exe" importaddress $poolAddr "" false 2>&1
 Write-OK "Pool address imported into wallet (prevents false orphans)."
+} # end ZCL block
+
+# ---- Step 2b: Vertcoin Daemon ----------------------------------
+if ($START_VTC) {
+Write-Step "Checking Vertcoin daemon (vertcoind)..."
+$vtcProc = Get-Process -Name "vertcoind" -ErrorAction SilentlyContinue
+if ($null -eq $vtcProc) {
+    Write-Host "    Starting vertcoind..." -ForegroundColor Yellow
+    $vtcDaemon = Join-Path $VTC_DIR "vertcoind.exe"
+    Start-Process -FilePath $vtcDaemon -ArgumentList "-conf=`"$VTC_CONF`"" -WindowStyle Minimized
+    Write-Host "    Waiting for Vertcoin RPC to become available..." -ForegroundColor Yellow
+    $ready = $false
+    for ($i = 0; $i -lt 60; $i++) {
+        Start-Sleep -Seconds 2
+        $result = & $VTC_CLI getblockcount 2>&1
+        if ($result -match '^\d+$') { $ready = $true; break }
+    }
+    if (-not $ready) {
+        Stop-WithError "vertcoind did not respond in time. It may still be starting - try again in a minute."
+    }
+} else {
+    Write-Host "    vertcoind already running (PID $($vtcProc.Id))." -ForegroundColor Yellow
+}
+$vtcBlocks = & $VTC_CLI getblockcount 2>&1
+Write-OK "vertcoind running. Block height: $vtcBlocks"
+} # end VTC block
 
 # ---- Step 3: Launch MiningCore ---------------------------------
 Write-Step "Starting MiningCore BitsPleaseYT Solo Pool..."
-Write-Host "    Pool will listen for miners on port 3032" -ForegroundColor Yellow
-Write-Host "    Config: $MC_CONFIG" -ForegroundColor DarkGray
+$activePorts = @()
+if ($START_ZCL) { $activePorts += "ZCL port 3032" }
+if ($START_VTC) { $activePorts += "VTC port 3033" }
+Write-Host "    Pool listening on: $($activePorts -join ' | ')" -ForegroundColor Yellow
+Write-Host "    Config: $MC_CONFIG_ACTIVE" -ForegroundColor DarkGray
 Write-Host ""
 
 # Start dashboard in background
@@ -173,7 +276,7 @@ Write-Host ""
 Set-Location $MC_DIR
 
 # Filter output: show accepted shares, blocks found, errors/warnings; hide dashboard API spam
-& "$MC_DIR\Miningcore.exe" -c "$MC_CONFIG" 2>&1 | ForEach-Object {
+& "$MC_DIR\Miningcore.exe" -c "$MC_CONFIG_ACTIVE" 2>&1 | ForEach-Object {
     $line = $_
 
     # Skip dashboard/metrics API noise
