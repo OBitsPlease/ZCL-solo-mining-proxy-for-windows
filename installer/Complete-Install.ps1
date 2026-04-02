@@ -272,16 +272,16 @@ txindex=1
     } | ConvertTo-Json | Set-Content "$INSTALL_DIR\paths.json"
     Write-Log "  paths.json written."
 
-    # ---- 7. Create "Start ZCL Solo Pool" desktop shortcut ----
+    # ---- 7. Create "BitsPlease Solo Pool" desktop shortcut ----
     Write-Log "Creating desktop shortcuts..."
     $WShell = New-Object -ComObject WScript.Shell
 
-    $startLink = $WShell.CreateShortcut("$env:PUBLIC\Desktop\Start ZCL Solo Pool.lnk")
+    $startLink = $WShell.CreateShortcut("$env:PUBLIC\Desktop\BitsPlease Solo Pool.lnk")
     $startLink.TargetPath  = "pwsh.exe"
     $startLink.Arguments   = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\Start-ZCL-Solo-Pool.ps1`""
     $startLink.WorkingDirectory = $INSTALL_DIR
-    $startLink.Description = "Start ZClassic Solo Mining Pool"
-    $startLink.IconLocation = "$INSTALL_DIR\zcl\zclwallet.exe,0"
+    $startLink.Description = "BitsPlease Solo Pool"
+    $startLink.IconLocation = "$INSTALL_DIR\mining.ico,0"
     $startLink.Save()
 
     # ---- 8. Remove Phase 1 "Finish Setup" shortcut ----
@@ -295,7 +295,7 @@ txindex=1
     Write-Log "  Setup complete!"
     Write-Log "  Edit config\zclassic_solo_pool.json to"
     Write-Log "  verify your address, then click:"
-    Write-Log "  'Start ZCL Solo Pool' on your Desktop."
+    Write-Log "  'BitsPlease Solo Pool' on your Desktop."
     Write-Log "============================================"
 
     $btnOK.Text    = "Done - Close"

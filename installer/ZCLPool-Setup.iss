@@ -34,7 +34,7 @@ PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
-UninstallDisplayIcon={app}\zcl\zclwallet.exe
+UninstallDisplayIcon={app}\mining.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -78,6 +78,9 @@ Source: "{#SrcRoot}\src\Miningcore\Persistence\Postgres\Scripts\createdb_postgre
 ; ---- Splash image (used by Complete-Install.ps1 GUI) ----
 Source: "splash.png"; DestDir: "{app}"; Flags: ignoreversion
 
+; ---- Desktop icon ----
+Source: "mining.ico"; DestDir: "{app}"; Flags: ignoreversion
+
 ; ---- Help file ----
 Source: "CONFIGURE-ME.txt"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -95,18 +98,18 @@ Name: "{group}\ZCL Wallet (Sync Blockchain Here First)"; \
 Name: "{group}\Finish ZCL Pool Setup (After Blockchain Syncs)"; \
     Filename: "pwsh.exe"; \
     Parameters: "-ExecutionPolicy Bypass -File ""{app}\Complete-Install.ps1"""; \
-    WorkingDir: "{app}"; IconFilename: "{app}\zcl\zclwallet.exe"
+    WorkingDir: "{app}"; IconFilename: "{app}\mining.ico"
 Name: "{group}\Configuration Guide"; \
     Filename: "{app}\CONFIGURE-ME.txt"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; \
     Filename: "{uninstallexe}"
 
-; Desktop - Phase 1: "Finish Setup" icon (Start Pool icon added by Complete-Install.ps1)
+; Desktop - Phase 1: "Finish Setup" icon (BitsPlease Solo Pool icon added by Complete-Install.ps1)
 Name: "{commondesktop}\Finish ZCL Pool Setup"; \
     Filename: "pwsh.exe"; \
     Parameters: "-ExecutionPolicy Bypass -File ""{app}\Complete-Install.ps1"""; \
     WorkingDir: "{app}"; \
-    IconFilename: "{app}\zcl\zclwallet.exe"; \
+    IconFilename: "{app}\mining.ico"; \
     Comment: "Run this after the ZClassic blockchain finishes syncing"; \
     Tasks: desktopicon
 
