@@ -455,9 +455,22 @@ app.post('/dashboard/wallet-send', (req, res) => {
     const { poolId, address, amount } = req.body;
     const meta = POOL_META[poolId || 'zcl_solo1'];
     if (!meta || !address || !amount) return res.json({ error: 'Missing parameters' });
-    exec(`"${meta.cli()}" sendtoaddress "${address}" ${amount}`, (err, stdout) => {
+
+    // Address-format sanity check before hitting CLI
+    const sym = meta.symbol;
+    const isZclAddr = /^t1[a-zA-Z0-9]{33}$/.test(address);
+    const isVtcAddr = /^(vtc1|V)[a-zA-Z0-9]+$/.test(address);
+    if (sym === 'ZCL' && !isZclAddr) return res.json({ error: `That doesn't look like a ZCL address (should start with t1…). Are you on the wrong pool tab?` });
+    if (sym === 'VTC' && !isVtcAddr) return res.json({ error: `That doesn't look like a VTC address (should start with vtc1… or V…). Are you on the wrong pool tab?` });
+
+    exec(`"${meta.cli()}" sendtoaddress "${address}" ${amount}`, (err, stdout, stderr) => {
         const txid = stdout?.trim();
-        if (err || !txid) return res.json({ error: err?.message || 'Send failed' });
+        if (err || !txid) {
+            // Extract just the "error message: …" part from CLI output, hide full path
+            const raw = (stderr || err?.message || 'Send failed');
+            const match = raw.match(/error message:\s*(.+)/i);
+            return res.json({ error: match ? match[1].trim() : 'Send failed — check address and balance' });
+        }
         res.json({ txid });
     });
 });
