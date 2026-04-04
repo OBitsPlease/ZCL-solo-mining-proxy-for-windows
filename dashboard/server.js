@@ -409,6 +409,60 @@ app.get('/dashboard/pools-meta', (req, res) => {
     res.json(result);
 });
 
+// Wallet info — balance, recent transactions, isLocal flag
+app.get('/dashboard/wallet-info', (req, res) => {
+    const poolId = req.query.poolId || 'zcl_solo1';
+    const meta = POOL_META[poolId];
+    if (!meta) return res.json({ error: 'Unknown pool' });
+    const cli = meta.cli();
+    const local = isLocalRequest(req);
+
+    const run = (args) => new Promise((resolve) => {
+        exec(`"${cli}" ${args}`, (err, stdout) => {
+            try { resolve(JSON.parse(stdout)); } catch(_) { resolve(null); }
+        });
+    });
+
+    Promise.all([
+        run('getwalletinfo'),
+        run('listtransactions "*" 20 0')
+    ]).then(([info, txs]) => {
+        res.json({
+            isLocal:      local,
+            balance:      info?.balance ?? 0,
+            unconfirmed:  info?.unconfirmed_balance ?? 0,
+            immature:     info?.immature_balance ?? 0,
+            transactions: txs || []
+        });
+    }).catch(e => res.json({ error: e.message, isLocal: local, balance: 0, unconfirmed: 0, immature: 0, transactions: [] }));
+});
+
+// Check if an address belongs to this wallet
+app.get('/dashboard/wallet-check', (req, res) => {
+    const poolId  = req.query.poolId || 'zcl_solo1';
+    const address = req.query.address;
+    const meta = POOL_META[poolId];
+    if (!meta || !address) return res.json({ isvalid: false, ismine: false });
+    exec(`"${meta.cli()}" validateaddress "${address}"`, (err, stdout) => {
+        try { res.json(JSON.parse(stdout)); }
+        catch(_) { res.json({ isvalid: false, ismine: false }); }
+    });
+});
+
+// Send funds — local only
+app.post('/dashboard/wallet-send', (req, res) => {
+    if (!isLocalRequest(req)) return res.status(403).json({ error: 'Send is only allowed from local access.' });
+    const { poolId, address, amount } = req.body;
+    const meta = POOL_META[poolId || 'zcl_solo1'];
+    if (!meta || !address || !amount) return res.json({ error: 'Missing parameters' });
+    exec(`"${meta.cli()}" sendtoaddress "${address}" ${amount}`, (err, stdout) => {
+        const txid = stdout?.trim();
+        if (err || !txid) return res.json({ error: err?.message || 'Send failed' });
+        res.json({ txid });
+    });
+});
+
+
 // Live share monitor — returns most recent N shares with worker hashrate
 app.get('/dashboard/live-shares', async (req, res) => {
     try {

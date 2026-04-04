@@ -496,6 +496,75 @@
     </div>
   </div>
 
+  <!-- WALLET MANAGER (local access only for send) -->
+  <div class="panel" style="margin-bottom:20px" id="wallet-panel">
+    <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Wallet Manager <span id="wallet-local-badge" style="display:none;font-size:10px;background:rgba(63,185,80,.15);color:var(--green);border-radius:4px;padding:2px 7px;margin-left:8px">🔒 Local</span></span>
+      <span id="wallet-remote-notice" style="font-size:11px;color:var(--muted);display:none">Send/receive disabled — remote access</span>
+    </div>
+    <div class="panel-body" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- Balance Section -->
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">Balances</div>
+        <table style="width:100%">
+          <thead><tr>
+            <th style="text-align:left">Type</th>
+            <th style="text-align:right">Amount</th>
+          </tr></thead>
+          <tbody id="wallet-balance-tbody">
+            <tr><td colspan="2" class="empty loading">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Address Checker -->
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">Check Address Ownership</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="form-input" type="text" id="wallet-check-addr" placeholder="Paste address…" style="flex:1;width:auto">
+          <button class="btn btn-sm" onclick="checkWalletAddress()">Check</button>
+        </div>
+        <div id="wallet-check-result" style="font-size:12px;min-height:20px"></div>
+      </div>
+
+      <!-- Send Funds (local only) -->
+      <div id="wallet-send-section" style="grid-column:1/-1;display:none">
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">Send Funds <span style="color:var(--green);font-size:10px;text-transform:none">(local access only)</span></div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end">
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">To Address</div>
+            <input class="form-input" type="text" id="wallet-send-addr" placeholder="Destination address…" style="width:100%">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Amount</div>
+            <input class="form-input" type="number" id="wallet-send-amount" placeholder="0.0" step="0.0001" min="0" style="width:100%">
+          </div>
+          <button class="btn" id="wallet-send-btn" onclick="sendWalletFunds()" style="background:var(--accent2);color:#000">Send</button>
+        </div>
+        <div id="wallet-send-result" style="font-size:12px;margin-top:8px;min-height:20px"></div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div style="grid-column:1/-1">
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">Recent Transactions</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Address</th>
+              <th>Confirmations</th>
+              <th>Date</th>
+            </tr></thead>
+            <tbody id="wallet-tx-tbody"><tr><td colspan="5" class="empty loading">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- LIVE SHARE MONITOR -->
   <div class="panel" style="margin-bottom:20px">
     <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between">
@@ -1222,9 +1291,107 @@ async function refreshAll() {
         loadWalletStats(),
         loadSharesRate(),
         loadPoolBalance(),
-        loadPendingRewards()
+        loadPendingRewards(),
+        loadWalletPanel()
     ]);
 }
+
+// ─── WALLET MANAGER ────────────────────────────────────────────────────────
+let walletIsLocal = false;
+
+async function loadWalletPanel() {
+    try {
+        const data = await fetch(`/dashboard/wallet-info?poolId=${POOL_ID}`).then(r => r.json());
+        walletIsLocal = data.isLocal;
+
+        // Show/hide local badge and send section
+        document.getElementById('wallet-local-badge').style.display  = data.isLocal ? 'inline' : 'none';
+        document.getElementById('wallet-remote-notice').style.display = data.isLocal ? 'none' : 'inline';
+        document.getElementById('wallet-send-section').style.display  = data.isLocal ? 'grid' : 'none';
+
+        // Balances table
+        const sym = POOL_SYMBOL;
+        const rows = [
+            { label: 'Confirmed',  amount: data.balance,           color: 'var(--text)' },
+            { label: 'Unconfirmed',amount: data.unconfirmed,       color: 'var(--yellow)' },
+            { label: 'Immature',   amount: data.immature,          color: 'var(--muted)' },
+        ];
+        document.getElementById('wallet-balance-tbody').innerHTML = rows.map(r =>
+            `<tr><td>${r.label}</td><td style="text-align:right;font-family:monospace;color:${r.color}">${r.amount.toFixed(6)} ${sym}</td></tr>`
+        ).join('');
+
+        // Transactions
+        const txBody = document.getElementById('wallet-tx-tbody');
+        if (data.transactions && data.transactions.length) {
+            txBody.innerHTML = data.transactions.map(tx => {
+                const color = tx.amount >= 0 ? 'var(--green)' : 'var(--red)';
+                const sign  = tx.amount >= 0 ? '+' : '';
+                const addr  = (tx.address || '–').slice(0, 14) + '…';
+                const date  = new Date(tx.time * 1000).toLocaleDateString();
+                return `<tr>
+                    <td><span class="tag" style="background:${tx.amount>=0?'rgba(63,185,80,.15)':'rgba(248,81,73,.15)'};color:${color}">${tx.category}</span></td>
+                    <td style="font-family:monospace;color:${color}">${sign}${Math.abs(tx.amount).toFixed(6)} ${sym}</td>
+                    <td class="mono addr" title="${tx.address||''}" style="font-size:11px">${addr}</td>
+                    <td>${tx.confirmations ?? '–'}</td>
+                    <td style="color:var(--muted);font-size:12px">${date}</td>
+                </tr>`;
+            }).join('');
+        } else {
+            txBody.innerHTML = '<tr><td colspan="5" class="empty">No transactions found</td></tr>';
+        }
+    } catch(e) {
+        document.getElementById('wallet-balance-tbody').innerHTML = '<tr><td colspan="2" class="empty">Wallet unavailable</td></tr>';
+    }
+}
+
+async function checkWalletAddress() {
+    const addr = document.getElementById('wallet-check-addr').value.trim();
+    const el   = document.getElementById('wallet-check-result');
+    if (!addr) return;
+    el.textContent = 'Checking…';
+    try {
+        const r = await fetch(`/dashboard/wallet-check?poolId=${POOL_ID}&address=${encodeURIComponent(addr)}`).then(r => r.json());
+        if (r.ismine) {
+            el.innerHTML = `<span style="color:var(--green)">✓ This address is in your wallet</span>`;
+        } else if (r.isvalid) {
+            el.innerHTML = `<span style="color:var(--yellow)">⚠ Valid address but NOT in your wallet</span>`;
+        } else {
+            el.innerHTML = `<span style="color:var(--red)">✗ Invalid address</span>`;
+        }
+    } catch(e) { el.innerHTML = `<span style="color:var(--red)">Error checking address</span>`; }
+}
+
+async function sendWalletFunds() {
+    if (!walletIsLocal) return;
+    const addr   = document.getElementById('wallet-send-addr').value.trim();
+    const amount = parseFloat(document.getElementById('wallet-send-amount').value);
+    const result = document.getElementById('wallet-send-result');
+    const btn    = document.getElementById('wallet-send-btn');
+    if (!addr || !amount || amount <= 0) { result.innerHTML = '<span style="color:var(--red)">Enter a valid address and amount</span>'; return; }
+
+    const confirm = window.confirm(`Send ${amount} ${POOL_SYMBOL} to:\n${addr}\n\nThis cannot be undone.`);
+    if (!confirm) return;
+
+    btn.disabled = true;
+    result.innerHTML = '<span style="color:var(--muted)">Sending…</span>';
+    try {
+        const r = await fetch('/dashboard/wallet-send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ poolId: POOL_ID, address: addr, amount })
+        }).then(r => r.json());
+        if (r.txid) {
+            result.innerHTML = `<span style="color:var(--green)">✓ Sent! TXID: <span style="font-family:monospace;font-size:10px">${r.txid}</span></span>`;
+            document.getElementById('wallet-send-addr').value = '';
+            document.getElementById('wallet-send-amount').value = '';
+            setTimeout(loadWalletPanel, 3000);
+        } else {
+            result.innerHTML = `<span style="color:var(--red)">✗ ${r.error || 'Send failed'}</span>`;
+        }
+    } catch(e) { result.innerHTML = `<span style="color:var(--red)">✗ Error: ${e.message}</span>`; }
+    btn.disabled = false;
+}
+
 
 
 // ─── LIVE SHARE MONITOR ────────────────────────────────────────────────────
