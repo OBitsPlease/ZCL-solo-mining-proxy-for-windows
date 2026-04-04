@@ -318,6 +318,7 @@
       <div class="card-label">Pool Balance (Unpaid)</div>
       <div class="card-value" id="pool-balance">–</div>
       <div class="card-sub" id="pool-balance-usd">– USD</div>
+      <div id="pool-balance-breakdown" style="margin-top:8px;display:none"></div>
     </div>
     <div class="card card-green">
       <div class="card-label">Pending Block Rewards</div>
@@ -1189,6 +1190,24 @@ async function loadPoolBalance() {
         document.getElementById('pool-balance').textContent = b.toFixed(4) + ' ' + POOL_SYMBOL;
         const usd = (price.price && b) ? '$' + (price.price * b).toFixed(2) + ' USD' : '– USD';
         document.getElementById('pool-balance-usd').textContent = usd;
+
+        // Per-address breakdown
+        const bdEl = document.getElementById('pool-balance-breakdown');
+        const breakdown = bal.breakdown || [];
+        if (breakdown.length > 1) {
+            bdEl.style.display = 'block';
+            bdEl.innerHTML = breakdown.map((entry, i) => {
+                const prefix = i === breakdown.length - 1 ? '└' : '├';
+                const short = entry.address.slice(0, 8) + '…' + entry.address.slice(-6);
+                return `<div style="font-size:10px;color:var(--muted);font-family:monospace;line-height:1.7">
+                    <span style="color:var(--accent2)">${prefix}</span>
+                    <span title="${entry.address}">${short}</span>
+                    <span style="float:right;color:var(--text)">${entry.amount.toFixed(4)}</span>
+                </div>`;
+            }).join('');
+        } else {
+            bdEl.style.display = 'none';
+        }
     } catch (_) {}
 }
 

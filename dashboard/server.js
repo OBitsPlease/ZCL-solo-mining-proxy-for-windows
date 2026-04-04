@@ -310,18 +310,19 @@ app.get('/dashboard/active-workers', async (req, res) => {
         res.json({ workers: [], totalHashrate: 0, error: e.message });
     }
 });
-// Endpoint: pool balance — sum of actual unpaid miner balances
+// Endpoint: pool balance — sum of actual unpaid miner balances with per-address breakdown
 app.get('/dashboard/pool-balance', async (req, res) => {
     try {
         const poolId = req.query.poolId || 'zcl_solo1';
         const r = await db.query(
-            "SELECT COALESCE(SUM(amount),0) AS total FROM balances WHERE poolid=$1 AND amount > 0",
+            "SELECT address, amount FROM balances WHERE poolid=$1 AND amount > 0 ORDER BY amount DESC",
             [poolId]
         );
-        const balance = parseFloat(r.rows[0].total);
-        res.json({ balance });
+        const breakdown = r.rows.map(row => ({ address: row.address, amount: parseFloat(row.amount) }));
+        const balance = breakdown.reduce((sum, b) => sum + b.amount, 0);
+        res.json({ balance, breakdown });
     } catch (e) {
-        res.json({ balance: 0 });
+        res.json({ balance: 0, breakdown: [] });
     }
 });
 // Endpoint: pending/immature block rewards (maturing but not yet payable)
