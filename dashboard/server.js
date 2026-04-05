@@ -49,9 +49,11 @@ const POOL_META = {
         name:        'ZClassic',
         color:       '#f7931a',
         hashUnit:    'Sol/s',
-        hashrateMultiplier: 8192,   // Equihash 192,7: solutions * 8192
-        blockReward:        0.390625, // ZCL block reward
-        logo:        'zclassic-zcl-logo.png'
+        hashrateMultiplier: 8192,
+        blockReward:        0.390625,
+        logo:        'zclassic-zcl-logo.png',
+        addressRegex: /^t1[a-zA-Z0-9]{33}$/,
+        addressHint:  'starts with t1…'
     },
     'vtc_solo1': {
         cli:         () => VTC_CLI,
@@ -62,9 +64,11 @@ const POOL_META = {
         name:        'Vertcoin',
         color:       '#1b8a3e',
         hashUnit:    'H/s',
-        hashrateMultiplier: 4294967296,  // Verthash: difficulty * 2^32
-        blockReward:        6.25,         // VTC block reward (halved Dec 8 2025)
-        logo:        'vertcoin-vtc-logo.png'
+        hashrateMultiplier: 4294967296,
+        blockReward:        6.25,
+        logo:        'vertcoin-vtc-logo.png',
+        addressRegex: /^(vtc1|V)[a-zA-Z0-9]+$/,
+        addressHint:  'starts with vtc1… or V…'
     }
 };
 
@@ -193,7 +197,7 @@ ensureBlockWorkerCache().catch(e => console.error('[block_worker_cache] setup er
 
 async function captureNewBlockWorkers() {
     try {
-        const poolId = 'zcl_solo1';
+        for (const poolId of Object.keys(POOL_META)) {
         // Get all blocks we don't yet have a worker for
         const missing = await db.query(`
             SELECT b.blockheight
@@ -201,7 +205,7 @@ async function captureNewBlockWorkers() {
             LEFT JOIN block_worker_cache c ON c.poolid = b.poolid AND c.blockheight = b.blockheight
             WHERE b.poolid = $1 AND c.blockheight IS NULL
         `, [poolId]);
-        if (!missing.rows.length) return;
+        if (!missing.rows.length) continue;
 
         const heights = missing.rows.map(r => parseInt(r.blockheight, 10));
         // Look up most common worker per block height from shares (may still exist briefly)
@@ -225,6 +229,7 @@ async function captureNewBlockWorkers() {
             `, [poolId, parseInt(height, 10), worker]);
             console.log(`[block_worker_cache] Captured: block ${height} → ${worker}`);
         }
+        } // end for poolId
     } catch (e) {
         // Silently skip — will retry on next interval
     }
@@ -461,11 +466,9 @@ app.post('/dashboard/wallet-send', (req, res) => {
     if (!meta || !address || !amount) return res.json({ error: 'Missing parameters' });
 
     // Address-format sanity check before hitting CLI
-    const sym = meta.symbol;
-    const isZclAddr = /^t1[a-zA-Z0-9]{33}$/.test(address);
-    const isVtcAddr = /^(vtc1|V)[a-zA-Z0-9]+$/.test(address);
-    if (sym === 'ZCL' && !isZclAddr) return res.json({ error: `That doesn't look like a ZCL address (should start with t1…). Are you on the wrong pool tab?` });
-    if (sym === 'VTC' && !isVtcAddr) return res.json({ error: `That doesn't look like a VTC address (should start with vtc1… or V…). Are you on the wrong pool tab?` });
+    if (meta.addressRegex && !meta.addressRegex.test(address)) {
+        return res.json({ error: `That doesn't look like a ${meta.symbol} address (${meta.addressHint}). Are you on the wrong pool tab?` });
+    }
 
     exec(`"${meta.cli()}" sendtoaddress "${address}" ${amount}`, (err, stdout, stderr) => {
         const txid = stdout?.trim();
