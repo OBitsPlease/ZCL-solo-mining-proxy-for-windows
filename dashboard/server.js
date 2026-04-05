@@ -92,8 +92,9 @@ app.use('/api', createProxyMiddleware({
 // Admin: read current pool config minimumPayment
 app.get('/dashboard/config', (req, res) => {
     try {
+        const poolId = req.query.poolId || 'zcl_solo1';
         const cfg = JSON.parse(fs.readFileSync(POOL_CONFIG_PATH, 'utf8'));
-        const pool = cfg.pools && cfg.pools[0];
+        const pool = (cfg.pools || []).find(p => p.id === poolId) || cfg.pools[0];
         res.json({
             minimumPayment: pool?.paymentProcessing?.minimumPayment ?? null,
             poolAddress: pool?.address ?? null,
@@ -116,17 +117,20 @@ app.post('/dashboard/config/minimumPayment', (req, res) => {
         return res.status(403).json({ error: 'Global payout threshold can only be changed from the pool machine (local access).' });
     }
     try {
-        const { value } = req.body;
+        const { value, poolId } = req.body;
         const num = parseFloat(value);
         if (isNaN(num) || num < 0) return res.status(400).json({ error: 'Invalid value' });
 
         const raw = fs.readFileSync(POOL_CONFIG_PATH, 'utf8');
         const cfg = JSON.parse(raw);
-        if (cfg.pools && cfg.pools[0] && cfg.pools[0].paymentProcessing) {
-            cfg.pools[0].paymentProcessing.minimumPayment = num;
+        const targetId = poolId || 'zcl_solo1';
+        const pool = (cfg.pools || []).find(p => p.id === targetId);
+        if (!pool) return res.status(404).json({ error: `Pool '${targetId}' not found in config` });
+        if (pool.paymentProcessing) {
+            pool.paymentProcessing.minimumPayment = num;
         }
         fs.writeFileSync(POOL_CONFIG_PATH, JSON.stringify(cfg, null, 4), 'utf8');
-        res.json({ success: true, minimumPayment: num });
+        res.json({ success: true, minimumPayment: num, poolId: targetId });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

@@ -796,7 +796,7 @@ async function get(url) {
 // ─── LOAD POOL CONFIG ──────────────────────────────────────────────────────
 async function loadConfig() {
     try {
-        poolConfig = await get('/dashboard/config');
+        poolConfig = await get(`/dashboard/config?poolId=${POOL_ID}`);
         if (poolConfig.minimumPayment !== null)
             document.getElementById('payout-input').value = poolConfig.minimumPayment;
     } catch(e) {}
@@ -1137,12 +1137,12 @@ async function saveMinPayout() {
         const r = await fetch('/dashboard/config/minimumPayment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: val })
+            body: JSON.stringify({ value: val, poolId: POOL_ID })
         });
         const d = await r.json();
         if (d.success) {
             msg.className = 'alert alert-ok';
-            msg.textContent = `✓ Minimum payment updated to ${d.minimumPayment} ZCL. Restart pool for effect.`;
+            msg.textContent = `✓ Minimum payment updated to ${d.minimumPayment} ${POOL_SYMBOL}. Restart pool for effect.`;
         } else {
             throw new Error(d.error);
         }
@@ -1161,7 +1161,7 @@ async function getMinerThreshold() {
         const d = await get(`${API}/pools/${POOL_ID}/miners/${addr}/settings`);
         document.getElementById('miner-thresh-input').value = d.paymentThreshold || '';
         msg.className = 'alert alert-ok';
-        msg.textContent = `Current threshold: ${d.paymentThreshold} ZCL`;
+        msg.textContent = `Current threshold: ${d.paymentThreshold} ${POOL_SYMBOL}`;
         msg.style.display = 'block';
     } catch(e) {
         msg.className = 'alert alert-err';
@@ -1186,7 +1186,7 @@ async function saveMinerThreshold() {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed');
         msg.className = 'alert alert-ok';
-        msg.textContent = `✓ Threshold set to ${d.paymentThreshold} ZCL for ${fmtAddr(addr)}`;
+        msg.textContent = `✓ Threshold set to ${d.paymentThreshold} ${POOL_SYMBOL} for ${fmtAddr(addr)}`;
     } catch(e) {
         msg.className = 'alert alert-err';
         msg.textContent = '✗ ' + (e.message || 'Failed');
