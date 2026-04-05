@@ -1065,11 +1065,32 @@ async function loadMinerChart(addr, workerFilter) {
                 });
 
             if (starPts.length) {
+                // Draw a proper 5-point star on an offscreen canvas
+                const starCanvas = document.createElement('canvas');
+                starCanvas.width = 28; starCanvas.height = 28;
+                const sc = starCanvas.getContext('2d');
+                const cx = 14, cy = 14, outer = 13, inner = 5, points = 5;
+                sc.beginPath();
+                for (let i = 0; i < points * 2; i++) {
+                    const angle = (i * Math.PI / points) - Math.PI / 2;
+                    const r = i % 2 === 0 ? outer : inner;
+                    i === 0 ? sc.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
+                            : sc.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+                }
+                sc.closePath();
+                sc.fillStyle = '#f7d354';
+                sc.strokeStyle = '#c8a800';
+                sc.lineWidth = 1.5;
+                sc.fill();
+                sc.stroke();
+                const starImg = new Image(28, 28);
+                starImg.src = starCanvas.toDataURL();
+
                 datasets.push({
                     label: '⭐ Block Found',
                     data: starPts,
                     type: 'scatter',
-                    pointStyle: 'star',
+                    pointStyle: starImg,
                     pointRadius: 14,
                     pointHoverRadius: 18,
                     borderColor: '#f7d354',
