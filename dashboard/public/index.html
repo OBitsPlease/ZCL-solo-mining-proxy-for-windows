@@ -760,8 +760,8 @@ function makeLineChart(id, datasets, yLabel, color) {
                     titleColor: '#e6edf3', bodyColor: '#8b949e',
                     callbacks: {
                         label: ctx => {
-                            if (ctx.dataset.label === '⛏ Block Found') {
-                                return `⛏ Block #${ctx.raw.height} — reward: ${ctx.raw.reward?.toFixed(4) ?? '?'} ${typeof POOL_SYMBOL !== 'undefined' ? POOL_SYMBOL : ''}`;
+                            if (ctx.dataset.label === '⭐ Block Found') {
+                                return `⭐ Block #${ctx.raw.height} — reward: ${ctx.raw.reward?.toFixed(4) ?? '?'} ${typeof POOL_SYMBOL !== 'undefined' ? POOL_SYMBOL : ''}`;
                             }
                             return `${ctx.dataset.label}: ${typeof fmtHash === 'function' ? fmtHash(ctx.parsed.y) : ctx.parsed.y}`;
                         }
@@ -1065,31 +1065,20 @@ async function loadMinerChart(addr, workerFilter) {
                 });
 
             if (starPts.length) {
-                // Build a small pickaxe image for the chart marker
-                const pickSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="24" height="24">
-                  <g transform="rotate(-45,16,16)">
-                    <rect x="13" y="4" width="6" height="14" rx="2" fill="#f7d354"/>
-                    <rect x="4" y="2" width="24" height="8" rx="3" fill="#c0a020"/>
-                    <rect x="14" y="17" width="4" height="11" rx="2" fill="#8B5E3C"/>
-                  </g>
-                </svg>`;
-                const pickImg = new Image(24, 24);
-                pickImg.src = 'data:image/svg+xml;base64,' + btoa(pickSvg);
-
                 datasets.push({
-                    label: '⛏ Block Found',
+                    label: '⭐ Block Found',
                     data: starPts,
                     type: 'scatter',
-                    pointStyle: pickImg,
-                    pointRadius: 12,
-                    pointHoverRadius: 16,
+                    pointStyle: 'star',
+                    pointRadius: 14,
+                    pointHoverRadius: 18,
                     borderColor: '#f7d354',
-                    backgroundColor: '#f7d354cc',
+                    backgroundColor: '#f7d354',
                     borderWidth: 2,
                     showLine: false,
                     tooltip: {
                         callbacks: {
-                            label: ctx => `⛏ Block #${ctx.raw.height} — ${ctx.raw.reward?.toFixed(4) ?? '?'} ${POOL_SYMBOL}`
+                            label: ctx => `⭐ Block #${ctx.raw.height} — ${ctx.raw.reward?.toFixed(4) ?? '?'} ${POOL_SYMBOL}`
                         }
                     }
                 });
