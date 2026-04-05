@@ -755,7 +755,18 @@ function makeLineChart(id, datasets, yLabel, color) {
             interaction: { intersect: false, mode: 'index' },
             plugins: {
                 legend: { labels: { color: '#8b949e', boxWidth: 12, font: { size: 11 } } },
-                tooltip: { backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1, titleColor: '#e6edf3', bodyColor: '#8b949e' }
+                tooltip: {
+                    backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+                    titleColor: '#e6edf3', bodyColor: '#8b949e',
+                    callbacks: {
+                        label: ctx => {
+                            if (ctx.dataset.label === '⭐ Block Found') {
+                                return `⭐ Block #${ctx.raw.height} — reward: ${ctx.raw.reward?.toFixed(4) ?? '?'} ${typeof POOL_SYMBOL !== 'undefined' ? POOL_SYMBOL : ''}`;
+                            }
+                            return `${ctx.dataset.label}: ${typeof fmtHash === 'function' ? fmtHash(ctx.parsed.y) : ctx.parsed.y}`;
+                        }
+                    }
+                }
             },
             scales: {
                 x: {
@@ -985,21 +996,26 @@ document.getElementById('miner-select').addEventListener('change', function() {
 // addr = wallet address, workerFilter = specific worker name or null for all
 async function loadMinerChart(addr, workerFilter) {
     try {
-        const data = await get(`${API}/pools/${POOL_ID}/miners/${addr}/performance?mode=Day`);
+        const [data, blocksRaw] = await Promise.all([
+            get(`${API}/pools/${POOL_ID}/miners/${addr}/performance?mode=Day`),
+            get(`${API}/pools/${POOL_ID}/blocks?page=0&pageSize=100`)
+        ]);
         const samples = Array.isArray(data) ? data : [];
+        const allBlocks = Array.isArray(blocksRaw) ? blocksRaw : (blocksRaw.result || blocksRaw.blocks || []);
+
+        // Filter blocks found by this miner address
+        const minerBlocks = allBlocks.filter(b => b.miner === addr);
 
         const colors = ['#f7931a','#00d4aa','#a371f7','#58a6ff','#3fb950','#ff7b72'];
         let datasets;
 
         if (workerFilter) {
-            // Single worker — one line
             const pts = samples.map(s => ({
                 x: new Date(s.created),
                 y: s.workers?.[workerFilter]?.hashrate || 0
             }));
             datasets = [ds(workerFilter, pts, colors[0])];
         } else {
-            // All workers for this address — one line per worker
             const workerNames = new Set();
             samples.forEach(s => Object.keys(s.workers || {}).forEach(w => workerNames.add(w)));
             datasets = [...workerNames].map((w, i) => {
@@ -1009,13 +1025,63 @@ async function loadMinerChart(addr, workerFilter) {
                 }));
                 return ds(w || 'default', pts, colors[i % colors.length]);
             });
-            // Fallback: total line if no per-worker data
             if (!datasets.length) {
                 const pts = samples.map(s => ({
                     x: new Date(s.created),
                     y: Object.values(s.workers || {}).reduce((a, w) => a + (w.hashrate || 0), 0)
                 }));
                 datasets.push(ds('hashrate', pts, '#f7931a'));
+            }
+        }
+
+        // Build star marker dataset from blocks found within the chart's time window
+        if (minerBlocks.length && samples.length) {
+            const chartStart = new Date(samples[0].created).getTime();
+            const chartEnd   = new Date(samples[samples.length - 1].created).getTime();
+
+            // For each block time, interpolate the hashrate from surrounding samples
+            const starPts = minerBlocks
+                .map(b => ({ t: new Date(b.created).getTime(), block: b }))
+                .filter(({ t }) => t >= chartStart && t <= chartEnd)
+                .map(({ t, block }) => {
+                    // Find surrounding samples to interpolate y position
+                    let y = 0;
+                    for (let i = 0; i < samples.length - 1; i++) {
+                        const t0 = new Date(samples[i].created).getTime();
+                        const t1 = new Date(samples[i + 1].created).getTime();
+                        if (t >= t0 && t <= t1) {
+                            const frac = (t - t0) / (t1 - t0);
+                            const hr0 = workerFilter
+                                ? (samples[i].workers?.[workerFilter]?.hashrate || 0)
+                                : Object.values(samples[i].workers || {}).reduce((a, w) => a + (w.hashrate || 0), 0);
+                            const hr1 = workerFilter
+                                ? (samples[i+1].workers?.[workerFilter]?.hashrate || 0)
+                                : Object.values(samples[i+1].workers || {}).reduce((a, w) => a + (w.hashrate || 0), 0);
+                            y = hr0 + frac * (hr1 - hr0);
+                            break;
+                        }
+                    }
+                    return { x: new Date(block.created), y, height: block.blockHeight || block.height, reward: block.reward };
+                });
+
+            if (starPts.length) {
+                datasets.push({
+                    label: '⭐ Block Found',
+                    data: starPts,
+                    type: 'scatter',
+                    pointStyle: 'star',
+                    pointRadius: 12,
+                    pointHoverRadius: 16,
+                    borderColor: '#f7d354',
+                    backgroundColor: '#f7d354cc',
+                    borderWidth: 2,
+                    showLine: false,
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `⭐ Block #${ctx.raw.height} — ${ctx.raw.reward?.toFixed(4) ?? '?'} ${POOL_SYMBOL}`
+                        }
+                    }
+                });
             }
         }
 
