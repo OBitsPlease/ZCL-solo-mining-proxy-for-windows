@@ -414,7 +414,10 @@
               <input class="form-input" type="number" id="payout-input" step="0.001" min="0.001" placeholder="0.01">
               <button class="btn btn-sm" id="payout-btn" onclick="saveMinPayout()">Save</button>
             </div>
-            <div style="font-size:0.75em;color:#888;margin-top:-6px">⚠ Global setting — only changeable from the pool machine (local access)</div>
+            <div style="font-size:0.75em;color:var(--muted);margin-top:2px">
+              Current pool minimum: <span id="current-min-payout" style="color:var(--accent2);font-weight:600">—</span>
+            </div>
+            <div style="font-size:0.75em;color:#888;margin-top:4px">⚠ Global setting — only changeable from the pool machine (local access)</div>
             <div class="form-row" style="flex-direction:column;align-items:flex-start;gap:4px">
               <span class="form-label">Per-miner threshold</span>
               <div style="display:flex;gap:8px;width:100%">
@@ -797,8 +800,10 @@ async function get(url) {
 async function loadConfig() {
     try {
         poolConfig = await get(`/dashboard/config?poolId=${POOL_ID}`);
-        if (poolConfig.minimumPayment !== null)
+        if (poolConfig.minimumPayment !== null) {
             document.getElementById('payout-input').value = poolConfig.minimumPayment;
+            document.getElementById('current-min-payout').textContent = `${poolConfig.minimumPayment} ${POOL_SYMBOL}`;
+        }
     } catch(e) {}
 }
 
@@ -1143,6 +1148,7 @@ async function saveMinPayout() {
         if (d.success) {
             msg.className = 'alert alert-ok';
             msg.textContent = `✓ Minimum payment updated to ${d.minimumPayment} ${POOL_SYMBOL}. Restart pool for effect.`;
+            document.getElementById('current-min-payout').textContent = `${d.minimumPayment} ${POOL_SYMBOL}`;
         } else {
             throw new Error(d.error);
         }
